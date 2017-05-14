@@ -30,12 +30,9 @@ function createWindow () {
 app.on('ready', function() {
   createWindow();
 
-  if (tib.configFileExists()) {
-    tib.updateConfigInfo().then(() => { tib.checkForUpdatesWithAllUsers(); });
-    notifyUserOnline();
-  }
+  updateAndNotify();
 
-  setInterval(() => { updateAndNotify }, 300000);
+  setInterval(() => { updateAndNotify(); }, 60000);
 });
 
 app.on('window-all-closed', function () {
@@ -62,10 +59,12 @@ function queryApi(username) {
 
 function updateAndNotify() {
   if (tib.configFileExists()) {
-    tib.updateConfigInfo().then(() => { tib.checkForUpdatesWithAllUsers(); });
+    tib.updateConfigInfo().then(() => { 
+      tib.checkForUpdatesWithAllUsers(); 
+      notifyUserOnline();
+      displayNumberOfUsersOnline();
+    });
   }
-
-  notifyUserOnline();
 }
 
 function notifyUserOnline() {
@@ -77,4 +76,14 @@ function notifyUserOnline() {
     });
     tib.notifyNames.splice(tib.notifyNames[i],1);
   }
+}
+
+function displayNumberOfUsersOnline() {
+  let numberOfUsers = Object.keys(tib.onlineUsers).length;
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.send('usersOnline', numberOfUsers);    
+  });
+  
+  mainWindow.webContents.send('usersOnline', numberOfUsers);
 }

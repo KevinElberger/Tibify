@@ -70,13 +70,11 @@ class Tibify {
 
     fs.writeFile('./config.json', JSON.stringify(savedData), function (err) {
       if (err) {
-        console.log('There has been an error saving the saved data');
-        console.log(err.message);
+        console.log('There has been an error saving the saved data: ' + err.message);
         return;
       }
     });
   }
-
 
   updateConfigInfo() {
     var that = this;
@@ -86,8 +84,8 @@ class Tibify {
       resolve(
         Object.keys(data).forEach(key => {
           that.getUserData(key, (err, response, body) => {
-            console.log(err);
-            that.saveAllUserData(JSON.parse(body));
+            if (err) { console.log(err); }
+            else { that.saveAllUserData(JSON.parse(body)); }
           });
         })
       )
@@ -125,7 +123,6 @@ class Tibify {
         status: data[username].characters.other_characters[i].status
       });
     }
-
     return listOfUsers;
   }
 }

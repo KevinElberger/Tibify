@@ -10,20 +10,30 @@
     <div class="title">
       <h1>Tibify</h1>
     </div>
-    <div class="content">
+  
+    <div class="search">
       <input class="search-name" type="text" placeholder="Enter a player name" >
+    </div>
+  
+    <div class="online-now-box">
+      <span class="online-now-usercount"></span> friends are now online!
     </div>
   </body>
 
   <script>
     require('./renderer.js');
     var ipc = require('electron').ipcRenderer;
+    var numberOfUsers = document.getElementsByClassName('online-now-usercount')[0];
     var inputField = document.getElementsByClassName('search-name')[0];
     inputField.addEventListener('keypress', function(e) {
       if (e.keyCode === 13) {
         ipc.send('valueReceived', inputField.value);
         e.currentTarget.value = '';
       }
+    });
+
+    ipc.on('usersOnline', function(event, data) {
+      numberOfUsers.innerHTML = data;
     });
   </script>
 </html>
