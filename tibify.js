@@ -5,38 +5,10 @@ const inquirer = require('inquirer');
 const request = require('request');
 
 class Tibify {
+
   constructor() {
     this.onlineUsers = {};
-  }
-  // if (configFileExists()) {
-  //   setInterval(function() {
-  //     updateConfigInfo().then(() => { checkForUpdatesWithAllUsers(); });
-  //   }, 30000);
-  // }
-
-  // promptForUserName(function() {
-  //     getUserData(arguments[0].addFriend, (err, response, body) => {
-  //       saveNewUserData(JSON.parse(body));
-  //     });
-  // });
-
-  promptForUserName(callback) {
-    let question = [
-      {
-        name: 'addFriend',
-        type: 'input',
-        message: 'Enter the name of the player you want to monitor:',
-        validate: function (value) {
-          if (value.length) {
-            return true;
-          } else {
-            return 'Please enter a valid name';
-          }
-        }
-      }
-    ];
-
-    inquirer.prompt(question).then(callback);
+    this.notifyNames = [];
   }
 
   getUserData(name, callback) {
@@ -44,19 +16,19 @@ class Tibify {
   }
 
   saveNewUserData(username) {
-    if (userNameExists(username.characters.data.name)) {
+    if (this.userNameExists(username.characters.data.name)) {
       console.log('This user has already been added');
       return;
     } else {
-      saveAllUserData(username);
+      this.saveAllUserData(username);
     }
   }
 
   userNameExists(username) {
     let data;
 
-    if (configFileExists()) {
-      data = retrieveCurrentData();
+    if (this.configFileExists()) {
+      data = this.retrieveCurrentData();
     } else {
       return false;
     }
@@ -80,7 +52,7 @@ class Tibify {
     let data;
 
     try {
-      if (configFileExists()) {
+      if (this.configFileExists()) {
         data = fs.readFileSync('./config.json'); 
       } else {
         return {};
@@ -93,7 +65,7 @@ class Tibify {
   }
 
   saveAllUserData(user) {
-    let savedData = retrieveCurrentData();
+    let savedData = this.retrieveCurrentData();
     savedData[user.characters.data.name] = user;
 
     fs.writeFile('./config.json', JSON.stringify(savedData), function (err) {
@@ -107,13 +79,15 @@ class Tibify {
 
 
   updateConfigInfo() {
+    var that = this;
     return new Promise(function(resolve, reject) {
-      let data = retrieveCurrentData();
+      let data = that.retrieveCurrentData();
 
       resolve(
         Object.keys(data).forEach(key => {
-          getUserData(key, (err, response, body) => {
-            saveAllUserData(JSON.parse(body));
+          that.getUserData(key, (err, response, body) => {
+            console.log(err);
+            that.saveAllUserData(JSON.parse(body));
           });
         })
       )
@@ -121,28 +95,28 @@ class Tibify {
   }
 
   checkForUpdatesWithAllUsers() {
-    let data = retrieveCurrentData();
+    let data = this.retrieveCurrentData();
     for (let key in data) {
-      userIsOnline(key);
+      this.updateOnlineUsers(key);
     }
   }
 
-  userIsOnline(username) {
-    let userCharacterList = getListOfUsers(username);
+  updateOnlineUsers(username) {
+    let userCharacterList = this.getListOfUsers(username);
 
     for (let i = 0; i < userCharacterList.length; i++) {
-      if (userCharacterList[i].status === 'online' && onlineUsers[userCharacterList[i].name] === undefined) {
-        console.log(`${userCharacterList[i].name} is online!`);
-        onlineUsers[userCharacterList[i].name] = userCharacterList[i].name;
-      } else if (userCharacterList[i].status === 'offline' && onlineUsers[userCharacterList[i].name] !== undefined) {
-        delete onlineUsers[userCharacterList[i].name];
+      if (userCharacterList[i].status === 'online' && this.onlineUsers[userCharacterList[i].name] === undefined) {
+        this.notifyNames.push(userCharacterList[i].name);
+        this.onlineUsers[userCharacterList[i].name] = userCharacterList[i].name;
+      } else if (userCharacterList[i].status === 'offline' && this.onlineUsers[userCharacterList[i].name] !== undefined) {
+        delete this.onlineUsers[userCharacterList[i].name];
       }
     }
   }
 
   getListOfUsers(username) {
     let listOfUsers = [];
-    let data = retrieveCurrentData();
+    let data = this.retrieveCurrentData();
     let length = data[username].characters.other_characters.length;
 
     for (let i = 0; i < length; i++) {
@@ -156,6 +130,4 @@ class Tibify {
   }
 }
 
-module.exports = function() {
-  Tibify
-}
+module.exports = Tibify;
