@@ -2,17 +2,20 @@
   "name": "tibify",
   "version": "1.0.0",
   "description": "A small desktop app for Tibia notifications.",
-  "main": "index.js",
+  "main": "main.js",
   "keywords": [
     "tibify"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron ."
   },
+  "repository": "https://github.com/KevinElberger/Tibify",
   "author": "Kevin Elberger",
   "license": "ISC",
   "dependencies": {
     "commander": "^2.9.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "electron": "~1.6.2"
+  }
 }

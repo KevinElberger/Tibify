@@ -10,7 +10,7 @@ var onlineUsers = {};
 if (configFileExists()) {
   setInterval(function() {
     updateConfigInfo().then(() => { checkForUpdatesWithAllUsers(); });
-  }, 15000);
+  }, 30000);
 }
 
 // promptForUserName(function() {
@@ -88,7 +88,6 @@ function retrieveCurrentData() {
     console.log('There has been an error retrieving the saved data: ' + err);
     return;
   }
-
   return JSON.parse(data);
 }
 
@@ -102,7 +101,6 @@ function saveAllUserData(user) {
       console.log(err.message);
       return;
     }
-    console.log('All user data saved successfully');
   });
 }
 
