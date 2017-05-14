@@ -1,147 +1,157 @@
+'use strict';
 const fs = require('fs');
 const clear = require('clear');
 const inquirer = require('inquirer');
-const requestify = require('requestify');
+const request = require('request');
 
-(function() {
-  'use strict';
-  clear();
+clear();
+var onlineUsers = {};
 
-  if (configFileExists()) {
-    setInterval(function() {
-      updateConfigInfo().then(checkForUpdatesWithAllUsers);
-    }, 15000);
-  }
+if (configFileExists()) {
+  setInterval(function() {
+    updateConfigInfo().then(() => { checkForUpdatesWithAllUsers(); });
+  }, 15000);
+}
 
-  // promptForUserName(function() {
-  //     getUserData(arguments[0].addFriend, saveNewUserData);
-  // });
+// promptForUserName(function() {
+//     getUserData(arguments[0].addFriend, (err, response, body) => {
+//       saveNewUserData(JSON.parse(body));
+//     });
+// });
 
-  function promptForUserName(callback) {
-    let question = [
-      {
-        name: 'addFriend',
-        type: 'input',
-        message: 'Enter the name of the player you want to monitor:',
-        validate: function (value) {
-          if (value.length) {
-            return true;
-          } else {
-            return 'Please enter a valid name';
-          }
+function promptForUserName(callback) {
+  let question = [
+    {
+      name: 'addFriend',
+      type: 'input',
+      message: 'Enter the name of the player you want to monitor:',
+      validate: function (value) {
+        if (value.length) {
+          return true;
+        } else {
+          return 'Please enter a valid name';
         }
       }
-    ];
-
-    inquirer.prompt(question).then(callback);
-  }
-
-  function getUserData(name, callback) {
-    requestify.get(`https://api.tibiadata.com/v1/characters/${name}.json`).then(function (response) {
-      callback(response.getBody());
-    });
-  }
-
-  function saveNewUserData(user) {
-    if (userNameExists(user.characters.data.name)) {
-      console.log('This user has already been added');
-      return;
-    } else {
-      saveAllUserData(user, undefined);
     }
+  ];
+
+  inquirer.prompt(question).then(callback);
+}
+
+function getUserData(name, callback) {
+  request.get(`https://api.tibiadata.com/v1/characters/${name}.json`, callback);
+}
+
+function saveNewUserData(username) {
+  if (userNameExists(username.characters.data.name)) {
+    console.log('This user has already been added');
+    return;
+  } else {
+    saveAllUserData(username);
+  }
+}
+
+function userNameExists(username) {
+  let data;
+
+  if (configFileExists()) {
+    data = retrieveCurrentData();
+  } else {
+    return false;
   }
 
-  function userNameExists(username) {
-    let data;
+  try {
+    return data[username] !== undefined;
+  } catch (err) {
+    console.log('There was an error reading the saved data');
+  }
+  return false;
+}
 
+function configFileExists() {
+  if (fs.existsSync('./config.json')) {
+    return true;
+  }
+  return false;
+}
+
+function retrieveCurrentData() {
+  let data;
+
+  try {
     if (configFileExists()) {
-      data = retrieveCurrentData();
+      data = fs.readFileSync('./config.json'); 
     } else {
-      return false;
+      return {};
     }
-
-    try {
-      return data[username] !== undefined;
-    } catch (err) {
-      console.log('There was an error reading the saved data');
-    }
-    return false;
+  } catch (err) {
+    console.log('There has been an error retrieving the saved data: ' + err);
+    return;
   }
 
-  function configFileExists() {
-    if (fs.existsSync('./config.json')) {
-      return true;
-    }
-    return false;
-  }
+  return JSON.parse(data);
+}
 
-  function retrieveCurrentData() {
-    let data;
+function saveAllUserData(user) {
+  let savedData = retrieveCurrentData();
+  savedData[user.characters.data.name] = user;
 
-    try {
-      if (configFileExists()) {
-        data = fs.readFileSync('./config.json'); 
-      } else {
-        return {};
-      }
-    } catch (err) {
-      console.log('There has been an error retrieving the saved data: ' + err);
+  fs.writeFile('./config.json', JSON.stringify(savedData), function (err) {
+    if (err) {
+      console.log('There has been an error saving the saved data');
+      console.log(err.message);
       return;
     }
-    return JSON.parse(data);
+    console.log('All user data saved successfully');
+  });
+}
+
+
+function updateConfigInfo() {
+  return new Promise(function(resolve, reject) {
+    let data = retrieveCurrentData();
+
+    resolve(
+      Object.keys(data).forEach(key => {
+        getUserData(key, (err, response, body) => {
+          saveAllUserData(JSON.parse(body));
+        });
+      })
+    )
+  });
+}
+
+function checkForUpdatesWithAllUsers() {
+  let data = retrieveCurrentData();
+  for (let key in data) {
+    userIsOnline(key);
   }
+}
 
-  function saveAllUserData(user) {
-    let savedData = retrieveCurrentData();
-    let userData = JSON.stringify(user);
-    savedData[user.characters.data.name] = userData;
+function userIsOnline(username) {
+  let userCharacterList = getListOfUsers(username);
 
-    fs.writeFile('./config.json', JSON.stringify(savedData), function (err) {
-      if (err) {
-        console.log('There has been an error saving the saved data');
-        console.log(err.message);
-        return;
-      }
-      console.log('All user data saved successfully');
+  for (let i = 0; i < userCharacterList.length; i++) {
+    if (userCharacterList[i].status === 'online' && onlineUsers[userCharacterList[i].name] === undefined) {
+      console.log(`${userCharacterList[i].name} is online!`);
+      onlineUsers[userCharacterList[i].name] = userCharacterList[i].name;
+    } else if (userCharacterList[i].status === 'offline' && onlineUsers[userCharacterList[i].name] !== undefined) {
+      delete onlineUsers[userCharacterList[i].name];
+    }
+  }
+}
+
+function getListOfUsers(username) {
+  let listOfUsers = [];
+  let data = retrieveCurrentData();
+  let length = data[username].characters.other_characters.length;
+
+  for (let i = 0; i < length; i++) {
+    listOfUsers.push({
+      name: data[username].characters.other_characters[i].name,
+      status: data[username].characters.other_characters[i].status
     });
   }
 
-
-  function updateConfigInfo() {
-    return new Promise(function(resolve, reject) {
-      let data = retrieveCurrentData();
-
-      for (let key in data) {
-        setTimeout(getUserData(key, saveAllUserData), 1000);
-      }
-    });
-  }
-
-  function checkForUpdatesWithAllUsers() {
-    let data = retrieveCurrentData();
-    for (let key in data) {
-      userIsOnline(key);
-    }
-  }
-
-  function userIsOnline(username) {
-    let userCharacterList = [];
-    let data = retrieveCurrentData();
-    let length = JSON.parse(data[username]).characters.other_characters.length;
-
-    for (let i = 0; i < length; i++) {
-      userCharacterList.push({
-        name: JSON.parse(data[username]).characters.other_characters[i].name,
-        status: JSON.parse(data[username]).characters.other_characters[i].status
-      });
-    }
-
-    for (let i = 0; i < userCharacterList.length; i++) {
-      if (userCharacterList[i].status === 'online') {
-        console.log(`${userCharacterList[i].name} is online!`);
-        return true;
-      }
-    }
-    return false;
-  }
-}());
+  return listOfUsers;
+}
