@@ -1,7 +1,5 @@
 'use strict';
 const fs = require('fs');
-const clear = require('clear');
-const inquirer = require('inquirer');
 const request = require('request');
 
 class Tibify {
@@ -25,18 +23,13 @@ class Tibify {
   }
 
   userNameExists(username) {
-    let data;
-
     if (this.configFileExists()) {
-      data = this.retrieveCurrentData();
-    } else {
-      return false;
-    }
-
-    try {
-      return data[username] !== undefined;
-    } catch (err) {
-      console.log('There was an error reading the saved data');
+      try {
+        let data = this.retrieveCurrentData();
+        return data[username] !== undefined;
+      } catch (err) {
+        console.log('There was an error reading the saved data');
+      }
     }
     return false;
   }
@@ -49,19 +42,16 @@ class Tibify {
   }
 
   retrieveCurrentData() {
-    let data;
-
-    try {
-      if (this.configFileExists()) {
-        data = fs.readFileSync('./config.json'); 
-      } else {
-        return {};
+    if (this.configFileExists()) {
+      try {
+        let data = fs.readFileSync('./config.json', 'utf-8'); 
+        return JSON.parse(data);
+      } catch (err) {
+        console.log('There has been an error retrieving the saved data: ' + err);
+        return;
       }
-    } catch (err) {
-      console.log('There has been an error retrieving the saved data: ' + err);
-      return;
     }
-    return JSON.parse(data);
+    return {};
   }
 
   saveAllUserData(user) {

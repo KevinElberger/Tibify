@@ -14,7 +14,7 @@ let tib = new tibify();
 
 function createWindow () {
   mainWindow = new BrowserWindow({width: 600, height: 400, resizable: false});
-  //mainWindow.setMenu(null);
+  mainWindow.setMenu(null);
 
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, 'index.html'),
@@ -29,9 +29,7 @@ function createWindow () {
 
 app.on('ready', function() {
   createWindow();
-
   updateAndNotify();
-
   setInterval(() => { updateAndNotify(); }, 60000);
 });
 

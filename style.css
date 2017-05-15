@@ -55,12 +55,9 @@ input::-webkit-input-placeholder{
   right: 5px;
   bottom: 5px;
   padding: 15px;
-  cursor: pointer;
   font-size: 11px;
   color: #1abc9c;
   font-weight: bold;
   position: absolute;
   border-radius: 2px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-  transition: all 0.3s cubic-bezier(.25,.8,.25,1);
 }
