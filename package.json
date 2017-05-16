@@ -13,7 +13,8 @@
   "author": "Kevin Elberger",
   "license": "ISC",
   "dependencies": {
-    "node-notifier": "^5.1.2"
+    "node-notifier": "^5.1.2",
+    "request-promise": "^4.2.1"
   },
   "devDependencies": {
     "electron": "~1.6.2"

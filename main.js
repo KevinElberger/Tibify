@@ -2,6 +2,8 @@ const tibify = require('./tibify.js');
 const electron = require('electron');
 const ipc = require('electron').ipcMain;
 const notifier = require('node-notifier');
+const request = require('request-promise');
+
 
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
@@ -50,8 +52,8 @@ ipc.on('valueReceived', function(event, data) {
 });
 
 function queryApi(username) {
-  tib.getUserData(username, (err, response, body) => {
-    tib.saveNewUserData(JSON.parse(body));
+  tib.getUserData(username).then((data) => {
+    tib.saveNewUserData(JSON.parse(data));
   });
 }
 
@@ -77,7 +79,7 @@ function notifyUserOnline() {
 }
 
 function displayNumberOfUsersOnline() {
-  let numberOfUsers = Object.keys(tib.onlineUsers).length;
+  let numberOfUsers = Object.keys(tib.previouslyOnlineUsers).length;
 
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send('usersOnline', numberOfUsers);    

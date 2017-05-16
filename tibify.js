@@ -1,16 +1,16 @@
 'use strict';
 const fs = require('fs');
-const request = require('request');
+const request = require('request-promise');
 
 class Tibify {
 
   constructor() {
-    this.onlineUsers = {};
     this.notifyNames = [];
+    this.previouslyOnlineUsers = {};
   }
 
-  getUserData(name, callback) {
-    request.get(`https://api.tibiadata.com/v1/characters/${name}.json`, callback);
+  getUserData(name) {
+    return request.get(`https://api.tibiadata.com/v1/characters/${name}.json`);
   }
 
   saveNewUserData(username) {
@@ -44,8 +44,7 @@ class Tibify {
   retrieveCurrentData() {
     if (this.configFileExists()) {
       try {
-        let data = fs.readFileSync('./config.json', 'utf-8'); 
-        return JSON.parse(data);
+        return fs.readFileSync('./config.json', 'utf-8');
       } catch (err) {
         console.log('There has been an error retrieving the saved data: ' + err);
         return;
@@ -68,36 +67,36 @@ class Tibify {
 
   updateConfigInfo() {
     var that = this;
-    return new Promise(function(resolve, reject) {
-      let data = that.retrieveCurrentData();
+    let data = that.retrieveCurrentData();
+    let promises = [];
 
-      resolve(
-        Object.keys(data).forEach(key => {
-          that.getUserData(key, (err, response, body) => {
-            if (err) { console.log(err); }
-            else { that.saveAllUserData(JSON.parse(body)); }
-          });
-        })
-      )
+    Object.keys(data).forEach(key => {
+      promises.push(that.getUserData(key));
+    });
+
+    return Promise.all(promises).then(results => {
+      results.forEach(json => {
+        that.saveAllUserData(JSON.parse(json));
+      });
     });
   }
 
   checkForUpdatesWithAllUsers() {
     let data = this.retrieveCurrentData();
     for (let key in data) {
-      this.updateOnlineUsers(key);
+      this.updatePreviouslyOnlineUsers(key);
     }
   }
 
-  updateOnlineUsers(username) {
+  updatePreviouslyOnlineUsers(username) {
     let userCharacterList = this.getListOfUsers(username);
 
     for (let i = 0; i < userCharacterList.length; i++) {
-      if (userCharacterList[i].status === 'online' && this.onlineUsers[userCharacterList[i].name] === undefined) {
+      if (userCharacterList[i].status === 'online' && this.previouslyOnlineUsers[userCharacterList[i].name] === undefined) {
         this.notifyNames.push(userCharacterList[i].name);
-        this.onlineUsers[userCharacterList[i].name] = userCharacterList[i].name;
-      } else if (userCharacterList[i].status === 'offline' && this.onlineUsers[userCharacterList[i].name] !== undefined) {
-        delete this.onlineUsers[userCharacterList[i].name];
+        this.previouslyOnlineUsers[userCharacterList[i].name] = userCharacterList[i].name;
+      } else if (userCharacterList[i].status === 'offline' && this.previouslyOnlineUsers[userCharacterList[i].name] !== undefined) {
+        delete this.previouslyOnlineUsers[userCharacterList[i].name];
       }
     }
   }
