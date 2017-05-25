@@ -26,7 +26,7 @@ class Tibify {
     if (this.configFileExists()) {
       try {
         let data = this.retrieveCurrentData();
-        return data[username] !== undefined;
+        return data.hasOwnProperty(username);
       } catch (err) {
         console.log('There was an error reading the saved data');
       }
@@ -44,7 +44,7 @@ class Tibify {
   retrieveCurrentData() {
     if (this.configFileExists()) {
       try {
-        return fs.readFileSync('./config.json', 'utf-8');
+        return JSON.parse(fs.readFileSync('./config.json', 'utf-8'));
       } catch (err) {
         console.log('There has been an error retrieving the saved data: ' + err);
         return;
@@ -57,7 +57,7 @@ class Tibify {
     let savedData = this.retrieveCurrentData();
     savedData[user.characters.data.name] = user;
 
-    fs.writeFile('./config.json', JSON.stringify(savedData), function (err) {
+    fs.writeFileSync('./config.json', JSON.stringify(savedData), function (err) {
       if (err) {
         console.log('There has been an error saving the saved data: ' + err.message);
         return;

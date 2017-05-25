@@ -31,7 +31,6 @@ function createWindow () {
 
 app.on('ready', function() {
   createWindow();
-  updateAndNotify();
   setInterval(() => { updateAndNotify(); }, 60000);
 });
 
@@ -60,7 +59,12 @@ function queryApi(username) {
 function updateAndNotify() {
   if (tib.configFileExists()) {
     tib.updateConfigInfo().then(() => { 
-      tib.checkForUpdatesWithAllUsers(); 
+      let data = tib.retrieveCurrentData();
+
+      Object.keys(data).forEach(key => {
+        tib.updatePreviouslyOnlineUsers(key);
+      });
+
       notifyUserOnline();
       displayNumberOfUsersOnline();
     });
