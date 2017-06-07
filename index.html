@@ -49,8 +49,8 @@
 
         finishButton.addEventListener('click', function() {
           inputField.value = '';
-          resetForm();
           //ipc.send('valueReceived', inputField.value);
+          resetForm();
         });
       }
     });
@@ -60,6 +60,11 @@
     });
 
     function resetForm() {
+      var toastNotification = document.createElement('div');
+      var toastText = document.createTextNode('User added');
+      toastNotification.classList = 'toast peek';
+      toastNotification.appendChild(toastText);
+      document.body.appendChild(toastNotification);
       formPartOne.style.left = '33%';
       formPartTwo.style.display = 'none';
       formPartTwo.style.left = '100%';
