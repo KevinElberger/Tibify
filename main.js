@@ -4,7 +4,6 @@ const ipc = require('electron').ipcMain;
 const notifier = require('node-notifier');
 const request = require('request-promise');
 
-
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 
@@ -13,6 +12,7 @@ const url = require('url');
 
 let mainWindow;
 let tib = new tibify();
+let notifications = {};
 
 function createWindow () {
   mainWindow = new BrowserWindow({width: 600, height: 400, resizable: false});
@@ -47,7 +47,8 @@ app.on('activate', function () {
 });
 
 ipc.on('valueReceived', function(event, data) {
-  queryApi(data);
+  notifications[data.name] = data;
+  queryApi(data.name);
 });
 
 function queryApi(username) {
@@ -62,7 +63,9 @@ function updateAndNotify() {
       let data = tib.retrieveCurrentData();
 
       Object.keys(data).forEach(key => {
-        tib.updatePreviouslyOnlineUsers(key);
+        if (notifications[key].online) {
+          tib.updatePreviouslyOnlineUsers(key);
+        }
       });
 
       notifyUserOnline();

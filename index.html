@@ -50,7 +50,7 @@
         finishButton.addEventListener('click', function() {
           var data = getFormData();
           inputField.value = '';
-          //ipc.send('valueReceived', inputField.value);
+          ipc.send('valueReceived', data);
           resetForm();
         });
       }
@@ -80,6 +80,7 @@
           formData[notifications[i].name] = true;
         }
       }
+      console.log(formData);
       return formData;
     }
   </script>
