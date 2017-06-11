@@ -17,11 +17,11 @@
       </div>
       <div class="part-two">
         <p class="part-two-header">Notify me when this player...</p>
-        <input type="checkbox" id="online-notification" name="set-name" class="switch-input">
+        <input type="checkbox" id="online-notification" name="online" class="switch-input notifications">
         <label for="online-notification" class="switch-label">Comes Online</label>
-        <input type="checkbox" id="death-notification" name="set-name" class="switch-input">
+        <input type="checkbox" id="death-notification" name="death" class="switch-input notifications">
         <label for="death-notification" class="switch-label">Dies</label>
-        <input type="checkbox" id="level-notification" name="set-name" class="switch-input">
+        <input type="checkbox" id="level-notification" name="level" class="switch-input notifications">
         <label for="level-notification" class="switch-label">Gains A Level</label>
         <button class="raised-button">Finish</button>
       </div>
@@ -35,9 +35,9 @@
   <script>
     require('./renderer.js');
     var ipc = require('electron').ipcRenderer;
-    var inputField = document.getElementsByClassName('search-name')[0];
     var formPartOne = document.getElementsByClassName('part-one')[0];
     var formPartTwo = document.getElementsByClassName('part-two')[0];
+    var inputField = document.getElementsByClassName('search-name')[0];
     var finishButton = document.getElementsByClassName('raised-button')[0];
     var numberOfUsers = document.getElementsByClassName('online-now-usercount')[0];
 
@@ -48,6 +48,7 @@
         formPartTwo.style.left = '35%';
 
         finishButton.addEventListener('click', function() {
+          var data = getFormData();
           inputField.value = '';
           //ipc.send('valueReceived', inputField.value);
           resetForm();
@@ -68,6 +69,18 @@
       formPartOne.style.left = '33%';
       formPartTwo.style.display = 'none';
       formPartTwo.style.left = '100%';
+    }
+
+    function getFormData() {
+      var formData = {};
+      var notifications = document.getElementsByClassName('notifications');
+      formData.name = inputField.value;
+      for (var i = 0; i < notifications.length; i++) {
+        if (notifications[i].checked) {
+          formData[notifications[i].name] = true;
+        }
+      }
+      return formData;
     }
   </script>
 </html>
