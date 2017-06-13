@@ -114,6 +114,6 @@ function sendDeathNotification(username) {
   notifier.notify({
     'title': 'Tibify',
     'message': `${username} died today!`,
-    'icon': __dirname + '/icons/Outfit_Citizen_Male.gif'
+    'icon': __dirname + '/icons/Dead_Human.gif'
   });
 }
