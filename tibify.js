@@ -5,8 +5,9 @@ const request = require('request-promise');
 class Tibify {
 
   constructor() {
-    this.notifyNames = [];
+    this.currentOnlineUsers = [];
     this.previouslyOnlineUsers = {};
+    this.userDeaths = [];
   }
 
   getUserData(name) {
@@ -65,7 +66,7 @@ class Tibify {
     });
   }
 
-  updateConfigInfo() {
+  updateUserData() {
     var that = this;
     let data = that.retrieveCurrentData();
     let promises = [];
@@ -81,19 +82,12 @@ class Tibify {
     });
   }
 
-  checkForUpdatesWithAllUsers() {
-    let data = this.retrieveCurrentData();
-    for (let key in data) {
-      this.updatePreviouslyOnlineUsers(key);
-    }
-  }
-
   updatePreviouslyOnlineUsers(username) {
     let userCharacterList = this.getListOfUsers(username);
 
     for (let i = 0; i < userCharacterList.length; i++) {
       if (userCharacterList[i].status === 'online' && this.previouslyOnlineUsers[userCharacterList[i].name] === undefined) {
-        this.notifyNames.push(userCharacterList[i].name);
+        this.currentOnlineUsers.push(userCharacterList[i].name);
         this.previouslyOnlineUsers[userCharacterList[i].name] = userCharacterList[i].name;
       } else if (userCharacterList[i].status === 'offline' && this.previouslyOnlineUsers[userCharacterList[i].name] !== undefined) {
         delete this.previouslyOnlineUsers[userCharacterList[i].name];
@@ -113,6 +107,36 @@ class Tibify {
       });
     }
     return listOfUsers;
+  }
+
+  updateUserDeaths(username) {
+    let data = this.retrieveCurrentData();
+    let user = this.getUserInUserDeaths(data[username]);
+    let updatedDeathCount = data[username].characters.deaths.length;
+
+    if (user !== null) {
+      if (updatedDeathCount > user.deathCount) {
+        user.notified = false;
+      }
+      user.deaths = data[username].characters.deaths;
+      user.deathCount = updatedDeathCount;
+    } else {
+      this.userDeaths.push({
+        name: username,
+        notified: false,
+        deaths: data[username].characters.deaths,
+        deathCount: data[username].characters.deaths.length
+      });  
+    }
+  }
+
+  getUserInUserDeaths(username) {
+    for (let i = 0; i < this.userDeaths.length; i++) {
+      if (this.userDeaths[i].name === username) {
+        return this.userDeaths[i];
+      }
+    }
+    return null;
   }
 }
 
