@@ -111,7 +111,7 @@ class Tibify {
 
   updateUserDeaths(username) {
     let data = this.retrieveCurrentData();
-    let user = this.getUserInUserDeaths(data[username]);
+    let user = this.getUserInUserDeaths(username);
     let updatedDeathCount = data[username].characters.deaths.length;
 
     if (user !== null) {

@@ -59,10 +59,10 @@ function updateAndNotify() {
       let data = tib.retrieveCurrentData();
 
       Object.keys(data).forEach(key => {
-        if (notifications[key].online) {
+        if (notifications[key].online !== undefined && notifications[key].online) {
           tib.updatePreviouslyOnlineUsers(key);
         }
-        if (notifications[key].death) {
+        if (notifications[key].death !== undefined && notifications[key].death) {
           tib.updateUserDeaths(key);
         }
       });
@@ -97,7 +97,7 @@ function displayNumberOfUsersOnline() {
 
 function notifyUserDeath() {
   let today = new Date();
-  today.setHours(today.getHours() + 9);
+  today.setHours(today.getHours() + 2);
   today = today.toISOString().substr(0, 10);
 
   for (let i = 0; i < tib.userDeaths.length; i++) {
