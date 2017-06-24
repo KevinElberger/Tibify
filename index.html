@@ -41,6 +41,10 @@
     var finishButton = document.getElementsByClassName('raised-button')[0];
     var numberOfUsers = document.getElementsByClassName('online-now-usercount')[0];
 
+    ipc.on('usersOnline', function(event, data) {
+      numberOfUsers.innerHTML = data;
+    });
+
     inputField.addEventListener('keypress', function(e) {
       if (e.keyCode === 13) {
         formPartOne.style.left = '-50%';
@@ -56,9 +60,17 @@
       }
     });
 
-    ipc.on('usersOnline', function(event, data) {
-      numberOfUsers.innerHTML = data;
-    });
+    function getFormData() {
+      var formData = {};
+      var notifications = document.getElementsByClassName('notifications');
+      formData.name = inputField.value;
+      for (var i = 0; i < notifications.length; i++) {
+        if (notifications[i].checked) {
+          formData[notifications[i].name] = true;
+        }
+      }
+      return formData;
+    }
 
     function resetForm() {
       var toastNotification = document.createElement('div');
@@ -69,19 +81,6 @@
       formPartOne.style.left = '33%';
       formPartTwo.style.display = 'none';
       formPartTwo.style.left = '100%';
-    }
-
-    function getFormData() {
-      var formData = {};
-      var notifications = document.getElementsByClassName('notifications');
-      formData.name = inputField.value;
-      for (var i = 0; i < notifications.length; i++) {
-        if (notifications[i].checked) {
-          formData[notifications[i].name] = true;
-        }
-      }
-      console.log(formData);
-      return formData;
     }
   </script>
 </html>

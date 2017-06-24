@@ -5,9 +5,10 @@ const request = require('request-promise');
 class Tibify {
 
   constructor() {
+    this.userDeaths = [];
+    this.userLevels = [];
     this.currentOnlineUsers = [];
     this.previouslyOnlineUsers = {};
-    this.userDeaths = [];
   }
 
   getUserData(name) {
@@ -134,6 +135,30 @@ class Tibify {
     for (let i = 0; i < this.userDeaths.length; i++) {
       if (this.userDeaths[i].name === username) {
         return this.userDeaths[i];
+      }
+    }
+    return null;
+  }
+
+  updateUserLevels(username) {
+    let data = this.retrieveCurrentData();
+    let user = this.getUserInLevelArray(username);
+
+    if (user !== null) {
+
+    } else {
+      this.userLevels.push({
+        name: username,
+        notified: false,
+        level: data[username].characters.level
+      });
+    }
+  }
+
+  getUserInLevelArray(username) {
+    for (let i = 0; i < this.userLevels.length; i++) {
+      if (this.userLevels[i].name === username) {
+        return this.userLevels[i];
       }
     }
     return null;

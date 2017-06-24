@@ -16,7 +16,7 @@ let notifications = {};
 
 function createWindow () {
   mainWindow = new BrowserWindow({width: 600, height: 400, resizable: false});
-  // mainWindow.setMenu(null);
+  mainWindow.setMenu(null);
 
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, 'index.html'),
@@ -54,45 +54,30 @@ ipc.on('valueReceived', function(event, data) {
 });
 
 function updateAndNotify() {
-  if (tib.configFileExists()) {
-    tib.updateUserData().then(() => { 
-      let data = tib.retrieveCurrentData();
-
-      Object.keys(data).forEach(key => {
-        if (notifications[key].online !== undefined && notifications[key].online) {
-          tib.updatePreviouslyOnlineUsers(key);
-        }
-        if (notifications[key].death !== undefined && notifications[key].death) {
-          tib.updateUserDeaths(key);
-        }
-      });
-
-      notifyUserDeath();
-      notifyUserOnline();
-      displayNumberOfUsersOnline();
-    });
+  if (!tib.configFileExists()) {
+    return;
   }
-}
 
-function notifyUserOnline() {
-  for (var i = 0; i < tib.currentOnlineUsers.length; i++) {
-    notifier.notify({
-      'title': 'Tibify',
-      'message': `${tib.currentOnlineUsers[i]} is now online!`,
-      'icon': __dirname + '/icons/Outfit_Citizen_Male.gif'
+  tib.updateUserData().then(() => { 
+    let data = tib.retrieveCurrentData();
+
+    Object.keys(data).forEach(key => {
+      if (notifications[key].online !== undefined && notifications[key].online) {
+        tib.updatePreviouslyOnlineUsers(key);
+      }
+      if (notifications[key].death !== undefined && notifications[key].death) {
+        tib.updateUserDeaths(key);
+      }
+      if (notifications[key].level !== undefined && notifications[key].level) {
+        tib.updateUserLevels(key);
+      }
     });
-    tib.currentOnlineUsers.splice(tib.currentOnlineUsers[i],1);
-  }
-}
 
-function displayNumberOfUsersOnline() {
-  let numberOfUsers = Object.keys(tib.previouslyOnlineUsers).length;
-
-  mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.webContents.send('usersOnline', numberOfUsers);    
+    notifyUserDeath();
+    notifyUserOnline();
+    notifyUserLevel();
+    displayNumberOfUsersOnline();
   });
-  
-  mainWindow.webContents.send('usersOnline', numberOfUsers);
 }
 
 function notifyUserDeath() {
@@ -110,10 +95,50 @@ function notifyUserDeath() {
   }
 }
 
+function notifyUserOnline() {
+  for (let i = 0; i < tib.currentOnlineUsers.length; i++) {
+    sendOnlineNotification(tib.currentOnlineUsers[i]);
+    tib.currentOnlineUsers.splice(tib.currentOnlineUsers[i],1);
+  }
+}
+
+function notifyUserLevel() {
+  for (let i = 0; i < tib.userLevels.length; i++) {
+    sendLevelUpNotification(tib.userLevels[i]);
+    tib.leveledUpUsers.splice(tib.userLevels[i],1);
+  }
+}
+
+function displayNumberOfUsersOnline() {
+  let numberOfUsers = Object.keys(tib.previouslyOnlineUsers).length;
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.send('usersOnline', numberOfUsers);    
+  });
+  
+  mainWindow.webContents.send('usersOnline', numberOfUsers);
+}
+
+function sendOnlineNotification(username) {
+  notifier.notify({
+    'title': 'Tibify',
+    'message': `${username} is now online!`,
+    'icon': __dirname + '/assets/icons/Outfit_Citizen_Male.gif'
+  });
+}
+
 function sendDeathNotification(username) {
   notifier.notify({
     'title': 'Tibify',
     'message': `${username} died today!`,
-    'icon': __dirname + '/icons/Dead_Human.gif'
+    'icon': __dirname + '/assets/icons/Dead_Human.gif'
+  });
+}
+
+function sendLevelUpNotification(username) {
+  notifier.notify({
+    'title': 'Tibify',
+    'message': `${username} has gained a level!`,
+    'icon': __dirname + '/assets/icons/Outfit_Citizen_Male.gif'
   });
 }
