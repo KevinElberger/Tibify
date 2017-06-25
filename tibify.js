@@ -11,10 +11,13 @@ class Tibify {
     this.previouslyOnlineUsers = {};
   }
 
-  saveConfigData() {
-    if (fs.existsSync('./config.json')) {
-
-    }
+  saveConfigData(data) {
+    fs.writeFileSync('./config.json', JSON.stringify(data), function (err) {
+      if (err) {
+        console.log('There has been an error saving the saved data: ' + err.message);
+        return;
+      }
+    });
   }
 
   getUserData(name) {
@@ -33,7 +36,7 @@ class Tibify {
   userNameExists(username) {
     if (fs.existsSync('./data.json')) {
       try {
-        let data = this.retrieveCurrentData();
+        let data = this.getFileData('data');
         return data.hasOwnProperty(username);
       } catch (err) {
         console.log('There was an error reading the saved data');
@@ -42,10 +45,10 @@ class Tibify {
     return false;
   }
 
-  retrieveCurrentData() {
-    if (fs.existsSync('./data.json')) {
+  getFileData(filename) {
+    if (fs.existsSync(`./${filename}.json`)) {
       try {
-        return JSON.parse(fs.readFileSync('./data.json', 'utf-8'));
+        return JSON.parse(fs.readFileSync(`./${filename}.json`, 'utf-8'));
       } catch (err) {
         console.log('There has been an error retrieving the saved data: ' + err);
         return;
@@ -55,7 +58,7 @@ class Tibify {
   }
 
   saveAllUserData(user) {
-    let savedData = this.retrieveCurrentData();
+    let savedData = this.getFileData('data');
     savedData[user.characters.data.name] = user;
 
     fs.writeFileSync('./data.json', JSON.stringify(savedData), function (err) {
@@ -68,8 +71,8 @@ class Tibify {
 
   updateUserData() {
     var that = this;
-    let data = that.retrieveCurrentData();
     let promises = [];
+    let data = that.getFileData('data');
 
     Object.keys(data).forEach(key => {
       promises.push(that.getUserData(key));
@@ -97,7 +100,7 @@ class Tibify {
 
   getListOfUsers(username) {
     let listOfUsers = [];
-    let data = this.retrieveCurrentData();
+    let data = this.getFileData('data');
     let length = data[username].characters.other_characters.length;
 
     for (let i = 0; i < length; i++) {
@@ -110,7 +113,7 @@ class Tibify {
   }
 
   updateUserDeaths(username) {
-    let data = this.retrieveCurrentData();
+    let data = this.getFileData('data');
     let user = this.getUserInUserDeaths(username);
     let updatedDeathCount = data[username].characters.deaths.length;
 
@@ -140,7 +143,7 @@ class Tibify {
   }
 
   updateUserLevels(username) {
-    let data = this.retrieveCurrentData();
+    let data = this.getFileData('data');
     let user = this.getUserInLevelArray(username);
     let updatedUserLevel = data[username].characters.data.level;
 

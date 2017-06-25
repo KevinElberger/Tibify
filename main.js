@@ -48,7 +48,13 @@ app.on('activate', function () {
 });
 
 ipc.on('valueReceived', function(event, data) {
-  notifications[data.name] = data;
+  let configData = tib.getFileData('config');
+
+  if (!configData.hasOwnProperty[data.name]) {
+    configData[data.name] = data;
+    tib.saveConfigData(configData);
+  }
+
   tib.getUserData(data.name).then((data) => {
     tib.saveNewUserData(JSON.parse(data));
   });
@@ -60,20 +66,19 @@ function updateAndNotify() {
   }
 
   tib.updateUserData().then(() => { 
-    let data = tib.retrieveCurrentData();
+    let configData = tib.getFileData('config');
 
-    Object.keys(data).forEach(key => {
-      if (notifications[key].online !== undefined && notifications[key].online) {
-        tib.updatePreviouslyOnlineUsers(key);
+    Object.keys(configData).forEach(user => {
+      if (configData[user].online) {
+        tib.updatePreviouslyOnlineUsers(user);
       }
-      if (notifications[key].death !== undefined && notifications[key].death) {
-        tib.updateUserDeaths(key);
+      if (configData[user].death) {
+        tib.updateUserDeaths(user);
       }
-      if (notifications[key].level !== undefined && notifications[key].level) {
-        tib.updateUserLevels(key);
+      if (configData[user].level) {
+        tib.updateUserLevels(user);
       }
     });
-
     notifyUserDeath();
     notifyUserOnline();
     notifyUserLevel();
@@ -83,6 +88,8 @@ function updateAndNotify() {
 
 function notifyUserDeath() {
   let today = new Date();
+  let icon = 'Dead_Human.gif';
+  let message = ' has died today!';
   today.setHours(today.getHours() + 2);
   today = today.toISOString().substr(0, 10);
 
@@ -90,24 +97,30 @@ function notifyUserDeath() {
     for (let d = 0; d < tib.userDeaths[i].deaths.length; d++) {
       if (tib.userDeaths[i].deaths[d].date.date.substr(0,11).indexOf(today) !== -1 && tib.userDeaths[i].notified === false) {
         tib.userDeaths[i].notified = true;
-        sendDeathNotification(tib.userDeaths[i].name);
+        sendNotification(tib.userDeaths[i].name + message, icon);
       }
     }
   }
 }
 
 function notifyUserOnline() {
+  let message = ' is now online!';
+  let icon = 'Outfit_Citizen_Male.gif';
+
   for (let i = 0; i < tib.currentOnlineUsers.length; i++) {
-    sendOnlineNotification(tib.currentOnlineUsers[i]);
+    sendNotification(tib.currentOnlineUsers[i] + message, icon);
     tib.currentOnlineUsers.splice(tib.currentOnlineUsers[i],1);
   }
 }
 
 function notifyUserLevel() {
+  let message = ' gained a level!';
+  let icon = 'Outfit_Citizen_Male.gif';
+
   for (let i = 0; i < tib.userLevels.length; i++) {
     if (tib.userLevels[i].notified === false) {
       tib.userLevels[i].notified = true; 
-      sendLevelUpNotification(tib.userLevels[i].name);
+      sendNotification(tib.userLevels[i].name + message, icon);
     }
   }
 }
@@ -122,26 +135,10 @@ function displayNumberOfUsersOnline() {
   mainWindow.webContents.send('usersOnline', numberOfUsers);
 }
 
-function sendOnlineNotification(username) {
+function sendNotification(message, icon) {
   notifier.notify({
     'title': 'Tibify',
-    'message': `${username} is now online!`,
-    'icon': __dirname + '/assets/icons/Outfit_Citizen_Male.gif'
-  });
-}
-
-function sendDeathNotification(username) {
-  notifier.notify({
-    'title': 'Tibify',
-    'message': `${username} died today!`,
-    'icon': __dirname + '/assets/icons/Dead_Human.gif'
-  });
-}
-
-function sendLevelUpNotification(username) {
-  notifier.notify({
-    'title': 'Tibify',
-    'message': `${username} has gained a level!`,
-    'icon': __dirname + '/assets/icons/Outfit_Citizen_Male.gif'
+    'message': message,
+    'icon': __dirname + `/assets/icons/${icon}`
   });
 }
