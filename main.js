@@ -1,3 +1,4 @@
+const fs = require('fs');
 const tibify = require('./tibify.js');
 const electron = require('electron');
 const ipc = require('electron').ipcMain;
@@ -54,7 +55,7 @@ ipc.on('valueReceived', function(event, data) {
 });
 
 function updateAndNotify() {
-  if (!tib.configFileExists()) {
+  if (!fs.existsSync('./data.json')) {
     return;
   }
 
@@ -104,8 +105,10 @@ function notifyUserOnline() {
 
 function notifyUserLevel() {
   for (let i = 0; i < tib.userLevels.length; i++) {
-    sendLevelUpNotification(tib.userLevels[i]);
-    tib.leveledUpUsers.splice(tib.userLevels[i],1);
+    if (tib.userLevels[i].notified === false) {
+      tib.userLevels[i].notified = true; 
+      sendLevelUpNotification(tib.userLevels[i].name);
+    }
   }
 }
 

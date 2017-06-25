@@ -14,4 +14,4 @@ Notifications will be displayed within 5-10 minutes of the event occurring.
 
 ## Built With
 
-* [Electron](https://electron.atom.io/)
+* [Electron](https://electron.atom.io/) - Used to create the desktop application

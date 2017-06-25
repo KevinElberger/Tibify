@@ -11,6 +11,12 @@ class Tibify {
     this.previouslyOnlineUsers = {};
   }
 
+  saveConfigData() {
+    if (fs.existsSync('./config.json')) {
+
+    }
+  }
+
   getUserData(name) {
     return request.get(`https://api.tibiadata.com/v1/characters/${name}.json`);
   }
@@ -25,7 +31,7 @@ class Tibify {
   }
 
   userNameExists(username) {
-    if (this.configFileExists()) {
+    if (fs.existsSync('./data.json')) {
       try {
         let data = this.retrieveCurrentData();
         return data.hasOwnProperty(username);
@@ -36,17 +42,10 @@ class Tibify {
     return false;
   }
 
-  configFileExists() {
-    if (fs.existsSync('./config.json')) {
-      return true;
-    }
-    return false;
-  }
-
   retrieveCurrentData() {
-    if (this.configFileExists()) {
+    if (fs.existsSync('./data.json')) {
       try {
-        return JSON.parse(fs.readFileSync('./config.json', 'utf-8'));
+        return JSON.parse(fs.readFileSync('./data.json', 'utf-8'));
       } catch (err) {
         console.log('There has been an error retrieving the saved data: ' + err);
         return;
@@ -59,7 +58,7 @@ class Tibify {
     let savedData = this.retrieveCurrentData();
     savedData[user.characters.data.name] = user;
 
-    fs.writeFileSync('./config.json', JSON.stringify(savedData), function (err) {
+    fs.writeFileSync('./data.json', JSON.stringify(savedData), function (err) {
       if (err) {
         console.log('There has been an error saving the saved data: ' + err.message);
         return;
@@ -143,9 +142,13 @@ class Tibify {
   updateUserLevels(username) {
     let data = this.retrieveCurrentData();
     let user = this.getUserInLevelArray(username);
+    let updatedUserLevel = data[username].characters.data.level;
 
     if (user !== null) {
-
+      if (Number(updatedUserLevel) > Number(user.level)) {
+        user.notified = false;
+      }
+      user.level = updatedUserLevel;
     } else {
       this.userLevels.push({
         name: username,
