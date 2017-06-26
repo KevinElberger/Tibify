@@ -12,10 +12,9 @@ class Tibify {
   }
 
   saveConfigData(data) {
-    fs.writeFileSync('./config.json', JSON.stringify(data), function (err) {
+    fs.writeFileSync('./config.json', JSON.stringify(data), 'utf-8', err => {
       if (err) {
-        console.log('There has been an error saving the saved data: ' + err.message);
-        return;
+        console.log(`There has been an error saving the saved data: ${err.message}`);
       }
     });
   }
@@ -25,16 +24,14 @@ class Tibify {
   }
 
   saveNewUserData(username) {
-    if (this.userNameExists(username.characters.data.name)) {
-      console.log('This user has already been added');
-      return;
-    } else {
+    if (!this.userNameExists(username.characters.data.name)) {
       this.saveAllUserData(username);
     }
   }
 
   userNameExists(username) {
-    if (fs.existsSync('./data.json')) {
+    const dataFile = './data.json';
+    if (fs.existsSync(dataFile)) {
       try {
         let data = this.getFileData('data');
         return data.hasOwnProperty(username);
@@ -50,7 +47,7 @@ class Tibify {
       try {
         return JSON.parse(fs.readFileSync(`./${filename}.json`, 'utf-8'));
       } catch (err) {
-        console.log('There has been an error retrieving the saved data: ' + err);
+        console.log(`There has been an error retrieving the saved data: ${err}`);
         return;
       }
     }
@@ -61,26 +58,24 @@ class Tibify {
     let savedData = this.getFileData('data');
     savedData[user.characters.data.name] = user;
 
-    fs.writeFileSync('./data.json', JSON.stringify(savedData), function (err) {
+    fs.writeFileSync('./data.json', JSON.stringify(savedData), 'utf-8', err => {
       if (err) {
-        console.log('There has been an error saving the saved data: ' + err.message);
-        return;
+        console.log(`There has been an error saving the saved data: ${err.message}`);
       }
     });
   }
 
   updateUserData() {
-    var that = this;
     let promises = [];
-    let data = that.getFileData('data');
+    let data = this.getFileData('data');
 
     Object.keys(data).forEach(key => {
-      promises.push(that.getUserData(key));
+      promises.push(this.getUserData(key));
     });
 
     return Promise.all(promises).then(results => {
       results.forEach(json => {
-        that.saveAllUserData(JSON.parse(json));
+        this.saveAllUserData(JSON.parse(json));
       });
     });
   }
@@ -88,14 +83,14 @@ class Tibify {
   updatePreviouslyOnlineUsers(username) {
     let userCharacterList = this.getListOfUsers(username);
 
-    for (let i = 0; i < userCharacterList.length; i++) {
-      if (userCharacterList[i].status === 'online' && this.previouslyOnlineUsers[userCharacterList[i].name] === undefined) {
-        this.currentOnlineUsers.push(userCharacterList[i].name);
-        this.previouslyOnlineUsers[userCharacterList[i].name] = userCharacterList[i].name;
-      } else if (userCharacterList[i].status === 'offline' && this.previouslyOnlineUsers[userCharacterList[i].name] !== undefined) {
-        delete this.previouslyOnlineUsers[userCharacterList[i].name];
+    userCharacterList.forEach(user => {
+      if (user.status === 'online') {
+        this.currentOnlineUsers.push(user.name);
+        this.previouslyOnlineUsers[user.name] = user.name;        
+      } else {
+        delete this.previouslyOnlineUsers[user.name];
       }
-    }
+    });
   }
 
   getListOfUsers(username) {
@@ -103,21 +98,21 @@ class Tibify {
     let data = this.getFileData('data');
     let length = data[username].characters.other_characters.length;
 
-    for (let i = 0; i < length; i++) {
+    data[username].characters.other_characters.forEach(character => {
       listOfUsers.push({
-        name: data[username].characters.other_characters[i].name,
-        status: data[username].characters.other_characters[i].status
+        name: character.name,
+        status: character.status
       });
-    }
+    });
     return listOfUsers;
   }
 
   updateUserDeaths(username) {
     let data = this.getFileData('data');
-    let user = this.getUserInUserDeaths(username);
+    let user = this.getUserFromNotificationArray(this.userDeaths, username);
     let updatedDeathCount = data[username].characters.deaths.length;
 
-    if (user !== null) {
+    if (user) {
       if (updatedDeathCount > user.deathCount) {
         user.notified = false;
       }
@@ -129,14 +124,14 @@ class Tibify {
         notified: false,
         deaths: data[username].characters.deaths,
         deathCount: data[username].characters.deaths.length
-      });  
+      });
     }
   }
 
-  getUserInUserDeaths(username) {
-    for (let i = 0; i < this.userDeaths.length; i++) {
-      if (this.userDeaths[i].name === username) {
-        return this.userDeaths[i];
+  getUserFromNotificationArray(array, username) {
+    for (let i = 0; i < array.length; i++) {
+      if (array[i].name === username) {
+        return array[i];
       }
     }
     return null;
@@ -144,10 +139,10 @@ class Tibify {
 
   updateUserLevels(username) {
     let data = this.getFileData('data');
-    let user = this.getUserInLevelArray(username);
+    let user = this.getUserFromNotificationArray(this.userLevels, username);
     let updatedUserLevel = data[username].characters.data.level;
 
-    if (user !== null) {
+    if (user) {
       if (Number(updatedUserLevel) > Number(user.level)) {
         user.notified = false;
       }
@@ -159,15 +154,6 @@ class Tibify {
         level: data[username].characters.level
       });
     }
-  }
-
-  getUserInLevelArray(username) {
-    for (let i = 0; i < this.userLevels.length; i++) {
-      if (this.userLevels[i].name === username) {
-        return this.userLevels[i];
-      }
-    }
-    return null;
   }
 }
 

@@ -4,12 +4,11 @@ const electron = require('electron');
 const ipc = require('electron').ipcMain;
 const notifier = require('node-notifier');
 const request = require('request-promise');
+const path = require('path');
+const url = require('url');
 
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
-
-const path = require('path');
-const url = require('url');
 
 let mainWindow;
 let tib = new tibify();
@@ -32,7 +31,7 @@ function createWindow () {
 
 app.on('ready', function() {
   createWindow();
-  setInterval(() => { updateAndNotify(); }, 20000);
+  setInterval(updateAndNotify, 20000);
 });
 
 app.on('window-all-closed', function () {
@@ -61,24 +60,18 @@ ipc.on('valueReceived', function(event, data) {
 });
 
 function updateAndNotify() {
-  if (!fs.existsSync('./data.json')) {
+  const dataFile = './data.json';
+  if (!fs.existsSync(dataFile)) {
     return;
   }
 
-  tib.updateUserData().then(() => { 
+  tib.updateUserData().then(() => {
     let configData = tib.getFileData('config');
 
     Object.keys(configData).forEach(user => {
-      if (configData[user].online) {
-        tib.updatePreviouslyOnlineUsers(user);
-      }
-      if (configData[user].death) {
-        tib.updateUserDeaths(user);
-      }
-      if (configData[user].level) {
-        tib.updateUserLevels(user);
-      }
+      updateUserInformation(configData, user);
     });
+
     notifyUserDeath();
     notifyUserOnline();
     notifyUserLevel();
@@ -86,43 +79,55 @@ function updateAndNotify() {
   });
 }
 
+function updateUserInformation(data, user) {
+  if (data[user].online) {
+    tib.updatePreviouslyOnlineUsers(user);
+  }
+  if (data[user].death) {
+    tib.updateUserDeaths(user);
+  }
+  if (data[user].level) {
+    tib.updateUserLevels(user);
+  }
+}
+
 function notifyUserDeath() {
   let today = new Date();
-  let icon = 'Dead_Human.gif';
-  let message = ' has died today!';
-  today.setHours(today.getHours() + 2);
-  today = today.toISOString().substr(0, 10);
+  const icon = 'Dead_Human.gif';
+  const message = ' has died today!';
+  let cestTime = today.setHours(today.getHours() + 2);
+  cestTime = today.toISOString().substr(0, 10);
 
-  for (let i = 0; i < tib.userDeaths.length; i++) {
-    for (let d = 0; d < tib.userDeaths[i].deaths.length; d++) {
-      if (tib.userDeaths[i].deaths[d].date.date.substr(0,11).indexOf(today) !== -1 && tib.userDeaths[i].notified === false) {
-        tib.userDeaths[i].notified = true;
-        sendNotification(tib.userDeaths[i].name + message, icon);
+  tib.userDeaths.forEach(user => {
+    user.deaths.forEach(death => {
+      if (death.date.date.substr(0,11).indexOf(cestTime) !== -1 && user.notified === false) {
+        user.notified = true;
+        sendNotification(user.name + message, icon);
       }
-    }
-  }
+    });
+  });
 }
 
 function notifyUserOnline() {
-  let message = ' is now online!';
-  let icon = 'Outfit_Citizen_Male.gif';
+  const message = ' is now online!';
+  const icon = 'Outfit_Citizen_Male.gif';
 
-  for (let i = 0; i < tib.currentOnlineUsers.length; i++) {
-    sendNotification(tib.currentOnlineUsers[i] + message, icon);
-    tib.currentOnlineUsers.splice(tib.currentOnlineUsers[i],1);
-  }
+  tib.currentOnlineUsers.forEach((user, index) => {
+    sendNotification(user + message, icon);
+    tib.currentOnlineUsers.splice(index, 1);
+  });
 }
 
 function notifyUserLevel() {
-  let message = ' gained a level!';
-  let icon = 'Outfit_Citizen_Male.gif';
+  const message = ' gained a level!';
+  const icon = 'Outfit_Citizen_Male.gif';
 
-  for (let i = 0; i < tib.userLevels.length; i++) {
-    if (tib.userLevels[i].notified === false) {
-      tib.userLevels[i].notified = true; 
-      sendNotification(tib.userLevels[i].name + message, icon);
+  tib.userLevels.forEach(function(user) {
+    if (user.notified === false) {
+      user.notified = true;
+      sendNotification(user.name + message, icon);
     }
-  }
+  });
 }
 
 function displayNumberOfUsersOnline() {
@@ -139,6 +144,6 @@ function sendNotification(message, icon) {
   notifier.notify({
     'title': 'Tibify',
     'message': message,
-    'icon': __dirname + `/assets/icons/${icon}`
+    'icon': `${__dirname}/assets/icons/${icon}`
   });
 }
