@@ -112,9 +112,13 @@ function notifyUserOnline() {
   const message = ' is now online!';
   const icon = 'Outfit_Citizen_Male.gif';
 
+  console.log('Before:');
+  console.log(tib.currentOnlineUsers);
   tib.currentOnlineUsers.forEach((user, index) => {
     sendNotification(user + message, icon);
     tib.currentOnlineUsers.splice(index, 1);
+    console.log('After:');
+    console.log(tib.currentOnlineUsers);
   });
 }
 
@@ -131,13 +135,23 @@ function notifyUserLevel() {
 }
 
 function displayNumberOfUsersOnline() {
+  let data = {};
+  let userNames = [];
   let numberOfUsers = Object.keys(tib.previouslyOnlineUsers).length;
+  
+  Object.keys(tib.currentOnlineUsers).forEach(user => {
+    userNames.push(user);
+  });
+
+  data['userNames'] = userNames;
+  data['numberOfUsers'] = numberOfUsers;
 
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send('usersOnline', numberOfUsers);    
   });
   
-  mainWindow.webContents.send('usersOnline', numberOfUsers);
+  //console.log(data);
+  //mainWindow.webContents.send('usersOnline', data);
 }
 
 function sendNotification(message, icon) {

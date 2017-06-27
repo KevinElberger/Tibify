@@ -67,10 +67,10 @@ input::-webkit-input-placeholder{
   left: 0;
   right: 0;
   top: auto;
-  padding: 0;
   bottom: 40px;
   display: none;
   color: #666;
+  padding: 10px 0;
   position: absolute;
   list-style-type: none;
   background-color: #fff;

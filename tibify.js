@@ -81,10 +81,11 @@ class Tibify {
   }
 
   updatePreviouslyOnlineUsers(username) {
+    let previouslyOnline = this.previouslyOnlineUsers;
     let userCharacterList = this.getListOfUsers(username);
-
+    
     userCharacterList.forEach(user => {
-      if (user.status === 'online') {
+      if (user.status === 'online' && !previouslyOnline.hasOwnProperty(user.name)) {
         this.currentOnlineUsers.push(user.name);
         this.previouslyOnlineUsers[user.name] = user.name;        
       } else {
