@@ -47,7 +47,8 @@
     var friendsListContainer = document.getElementsByClassName('online-now-box')[0];
 
     ipc.on('usersOnline', function(event, data) {
-      numberOfUsers.innerHTML = data;
+      appendOnlineUsers(data.userNames);
+      numberOfUsers.innerHTML = data.numberOfUsers;
     });
 
     friendList.style.display = 'none';
@@ -65,30 +66,42 @@
     });
 
     inputField.addEventListener('keypress', e => {
-      if (e.keyCode === 13) {
-        formPartOne.style.left = '-50%';
-        formPartTwo.style.display = 'inline-block';
-        formPartTwo.style.left = '35%';
-        formPartTwo.focus();
-
-        formPartTwo.addEventListener('keyup', e => {
-          if (e.keyCode === 8) {
-            formPartOne.style.left = '33%';
-            formPartTwo.style.display = 'none';
-            formPartTwo.style.left = '100%';
-          }
-        });
-
-        finishButton.addEventListener('click', function() {
-          var data = getFormData();
-          if (inputField.value !== '') {
-            inputField.value = '';
-            ipc.send('valueReceived', data);
-            resetForm();
-          }
-        });
+      if (e.keyCode !== 13) {
+        return;
       }
+
+      formPartOne.style.left = '-50%';
+      formPartTwo.style.display = 'inline-block';
+      formPartTwo.style.left = '35%';
+      formPartTwo.focus();
+
+      formPartTwo.addEventListener('keyup', e => {
+        if (e.keyCode !== 8) {
+          return;
+        }
+        formPartOne.style.left = '33%';
+        formPartTwo.style.display = 'none';
+        formPartTwo.style.left = '100%';
+      });
+
+      finishButton.addEventListener('click', function() {
+        let data = getFormData();
+        if (inputField.value !== '') {
+          inputField.value = '';
+          ipc.send('valueReceived', data);
+          resetForm();
+        }
+      });
     });
+
+    function appendOnlineUsers(users) {
+      users.forEach(user => {
+        let li = document.createElement('li');
+        let text = document.createTextNode(user);
+        li.appendChild(text);
+        friendList.appendChild(li);
+      });
+    }
 
     function getFormData() {
       let formData = {};

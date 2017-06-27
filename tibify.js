@@ -87,9 +87,9 @@ class Tibify {
     userCharacterList.forEach(user => {
       if (user.status === 'online' && !previouslyOnline.hasOwnProperty(user.name)) {
         this.currentOnlineUsers.push(user.name);
-        this.previouslyOnlineUsers[user.name] = user.name;        
-      } else {
-        delete this.previouslyOnlineUsers[user.name];
+        previouslyOnline[user.name] = user.name;        
+      } else if (user.status === 'offline' && previouslyOnline.hasOwnProperty(user.name)) {
+        delete previouslyOnline[user.name];
       }
     });
   }
