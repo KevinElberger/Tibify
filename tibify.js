@@ -145,12 +145,14 @@ class Tibify {
     if (user) {
       if (Number(updatedUserLevel) > Number(user.level)) {
         user.notified = false;
+        user.leveledUp = true;
       }
       user.level = updatedUserLevel;
     } else {
       this.userLevels.push({
         name: username,
         notified: false,
+        leveledUp: false,
         level: data[username].characters.level
       });
     }

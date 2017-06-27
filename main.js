@@ -123,7 +123,7 @@ function notifyUserLevel() {
   const icon = 'Outfit_Citizen_Male.gif';
 
   tib.userLevels.forEach(function(user) {
-    if (user.notified === false) {
+    if (!user.notified && user.leveledUp) {
       user.notified = true;
       sendNotification(user.name + message, icon);
     }

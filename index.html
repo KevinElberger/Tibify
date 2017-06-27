@@ -53,9 +53,11 @@
 
         finishButton.addEventListener('click', function() {
           var data = getFormData();
-          inputField.value = '';
-          ipc.send('valueReceived', data);
-          resetForm();
+          if (inputField.value !== '') {
+            inputField.value = '';
+            ipc.send('valueReceived', data);
+            resetForm();
+          }
         });
       }
     });
@@ -65,7 +67,7 @@
       let notifications = document.getElementsByClassName('notifications');
 
       formData.name = inputField.value;
-      for (var i = 0; i < notifications.length; i++) {
+      for (let i = 0; i < notifications.length; i++) {
         if (notifications[i].checked) {
           formData[notifications[i].name] = true;
         }
