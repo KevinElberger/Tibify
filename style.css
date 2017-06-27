@@ -71,6 +71,7 @@ input::-webkit-input-placeholder{
   top: 38%;
   left: 100%;
   display: none;
+  outline: none;
   text-align: center;
   position: absolute;
   transition: all 1s; 

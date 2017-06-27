@@ -15,7 +15,7 @@
       <div class="part-one">
         <input class="search-name" type="text" placeholder="Enter a player name" >
       </div>
-      <div class="part-two">
+      <div class="part-two" tabindex="-1">
         <p class="part-two-header">Notify me when this player...</p>
         <input type="checkbox" id="online-notification" name="online" class="switch-input notifications">
         <label for="online-notification" class="switch-label">Comes Online</label>
@@ -45,11 +45,20 @@
       numberOfUsers.innerHTML = data;
     });
 
-    inputField.addEventListener('keypress', function(e) {
+    inputField.addEventListener('keypress', e => {
       if (e.keyCode === 13) {
         formPartOne.style.left = '-50%';
         formPartTwo.style.display = 'inline-block';
         formPartTwo.style.left = '35%';
+        formPartTwo.focus();
+
+        formPartTwo.addEventListener('keyup', e => {
+          if (e.keyCode === 8) {
+            formPartOne.style.left = '33%';
+            formPartTwo.style.display = 'none';
+            formPartTwo.style.left = '100%';
+          }
+        });
 
         finishButton.addEventListener('click', function() {
           var data = getFormData();
