@@ -28,7 +28,10 @@
     </div>
   
     <div class="online-now-box">
-      <span class="online-now-usercount"></span> friends are now online!
+      <ul class="friends-list">
+      </ul>
+      <span class="online-now-usercount">0</span> friends are now online!
+      <span class="up-marker"></span>
     </div>
   </body>
 
@@ -37,12 +40,28 @@
     var ipc = require('electron').ipcRenderer;
     var formPartOne = document.getElementsByClassName('part-one')[0];
     var formPartTwo = document.getElementsByClassName('part-two')[0];
+    var friendList = document.getElementsByClassName('friends-list')[0];
     var inputField = document.getElementsByClassName('search-name')[0];
     var finishButton = document.getElementsByClassName('raised-button')[0];
     var numberOfUsers = document.getElementsByClassName('online-now-usercount')[0];
+    var friendsListContainer = document.getElementsByClassName('online-now-box')[0];
 
     ipc.on('usersOnline', function(event, data) {
       numberOfUsers.innerHTML = data;
+    });
+
+    friendList.style.display = 'none';
+
+    friendsListContainer.addEventListener('click', e => {
+      if (friendList.getElementsByTagName('li').length < 1) {
+        return;
+      }
+
+      if (friendList.style.display === 'none') {
+        friendList.style.display = 'block';
+      } else {
+        friendList.style.display = 'none';
+      }
     });
 
     inputField.addEventListener('keypress', e => {
