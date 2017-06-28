@@ -55,12 +55,17 @@ ipc.on('valueReceived', function(event, data) {
   }
 
   tib.getUserData(data.name).then((data) => {
+    if (JSON.parse(data).characters.error) {
+      console.log(JSON.parse(data).characters.error);
+      return;
+    }
     tib.saveNewUserData(JSON.parse(data));
   });
 });
 
 function updateAndNotify() {
   const dataFile = './data.json';
+  
   if (!fs.existsSync(dataFile)) {
     return;
   }
@@ -72,7 +77,7 @@ function updateAndNotify() {
       updateUserInformation(configData, user);
     });
 
-    displayNumberOfUsersOnline();
+    displayOnlineUsers();
     notifyUserDeath();
     notifyUserOnline();
     notifyUserLevel();
@@ -130,12 +135,12 @@ function notifyUserLevel() {
   });
 }
 
-function displayNumberOfUsersOnline() {
+function displayOnlineUsers() {
   let data = {};
   let userNames = [];
   let numberOfUsers = Object.keys(tib.previouslyOnlineUsers).length;
   
-  tib.currentOnlineUsers.forEach(user => {
+  Object.keys(tib.previouslyOnlineUsers).forEach(user => {
     userNames.push(user);
   });
 
@@ -145,7 +150,7 @@ function displayNumberOfUsersOnline() {
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send('usersOnline', numberOfUsers);    
   });
-  
+
   mainWindow.webContents.send('usersOnline', data);
 }
 

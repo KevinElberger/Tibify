@@ -30,58 +30,57 @@
     <div class="online-now-box">
       <ul class="friends-list">
       </ul>
-      <span class="online-now-usercount">0</span> friends are now online!
+      <span class="online-now-usercount">0</span> friend(s) are now online!
       <span class="up-marker"></span>
     </div>
   </body>
 
   <script>
     require('./renderer.js');
+    let receivedFirstData = false;
+    let previousOnlineUsers = [];
     var ipc = require('electron').ipcRenderer;
-    var formPartOne = document.getElementsByClassName('part-one')[0];
-    var formPartTwo = document.getElementsByClassName('part-two')[0];
-    var friendList = document.getElementsByClassName('friends-list')[0];
-    var inputField = document.getElementsByClassName('search-name')[0];
-    var finishButton = document.getElementsByClassName('raised-button')[0];
-    var numberOfUsers = document.getElementsByClassName('online-now-usercount')[0];
-    var friendsListContainer = document.getElementsByClassName('online-now-box')[0];
+    let formPartOne = document.getElementsByClassName('part-one')[0];
+    let formPartTwo = document.getElementsByClassName('part-two')[0];
+    let friendList = document.getElementsByClassName('friends-list')[0];
+    let inputField = document.getElementsByClassName('search-name')[0];
+    let finishButton = document.getElementsByClassName('raised-button')[0];
+    let numberOfUsers = document.getElementsByClassName('online-now-usercount')[0];
+    let friendsListContainer = document.getElementsByClassName('online-now-box')[0];
 
     ipc.on('usersOnline', function(event, data) {
-      appendOnlineUsers(data.userNames);
+      if (!receivedFirstData && data.userNames) {
+        receivedFirstData = true;
+        appendOnlineUsers(data.userNames);
+        previousOnlineUsers = data.userNames;
+      } else if (!arraysEqual(previousOnlineUsers, data.userNames)) {
+        appendOnlineUsers(data.userNames);
+        previousOnlineUsers = data.userNames;
+      }
       numberOfUsers.innerHTML = data.numberOfUsers;
     });
 
     friendList.style.display = 'none';
 
-    friendsListContainer.addEventListener('click', e => {
-      if (friendList.getElementsByTagName('li').length < 1) {
-        return;
-      }
-
-      if (friendList.style.display === 'none') {
-        friendList.style.display = 'block';
-      } else {
-        friendList.style.display = 'none';
-      }
-    });
+    showOrHideFriendList(friendList);
 
     inputField.addEventListener('keypress', e => {
       if (e.keyCode !== 13) {
         return;
       }
 
+      formPartTwo.focus();
+      formPartTwo.style.left = '35%';
       formPartOne.style.left = '-50%';
       formPartTwo.style.display = 'inline-block';
-      formPartTwo.style.left = '35%';
-      formPartTwo.focus();
 
       formPartTwo.addEventListener('keyup', e => {
         if (e.keyCode !== 8) {
           return;
         }
         formPartOne.style.left = '33%';
-        formPartTwo.style.display = 'none';
         formPartTwo.style.left = '100%';
+        formPartTwo.style.display = 'none';
       });
 
       finishButton.addEventListener('click', function() {
@@ -95,11 +94,53 @@
     });
 
     function appendOnlineUsers(users) {
+      let parentNode = friendsListContainer;
+      let newFriendList = document.createElement('ul');
+      let friendList = document.getElementsByClassName('friends-list')[0];
+
+      console.log('I was called');
+      parentNode.removeChild(friendList);
+      newFriendList.classList = 'friends-list';
+
+      if (previousOnlineUsers.length < users.length) {
+        
+      }
+
       users.forEach(user => {
         let li = document.createElement('li');
         let text = document.createTextNode(user);
         li.appendChild(text);
-        friendList.appendChild(li);
+        newFriendList.appendChild(li);
+      });
+      friendsListContainer.appendChild(newFriendList);
+      showOrHideFriendList(newFriendList);
+    }
+
+    function arraysEqual(arr1, arr2) {
+      if (arr1.length !== arr2.length) {
+        return false;
+      }
+
+      for (let i = arr1.length; i--;) {
+        if (arr1[i] !== arr2[i]) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    function showOrHideFriendList(element) {
+      friendsListContainer.addEventListener('click', e => {
+        if (element.getElementsByTagName('li').length < 1) {
+          return;
+        }
+
+        if (element.style.display === 'none') {
+          element.style.display = 'block';
+        } else {
+          element.style.display = 'none';
+        }
       });
     }
 
