@@ -18,7 +18,7 @@ require('./renderer.js');
       previousOnlineUsers = data.userNames;
       receivedFirstData = true;
     } 
-    if (!arraysEqual(previousOnlineUsers, data.userNames)) {
+    if (!arraysAreEqual(previousOnlineUsers, data.userNames)) {
       displayOnlineUsers(data.userNames);
       previousOnlineUsers = data.userNames;
     }
@@ -113,7 +113,7 @@ require('./renderer.js');
     document.body.appendChild(toastNotification);
   }
 
-  function arraysEqual(arr1, arr2) {
+  function arraysAreEqual(arr1, arr2) {
     if (arr1.length !== arr2.length) {
       return false;
     }
@@ -135,7 +135,7 @@ require('./renderer.js');
     if (previousOnlineUsers.length < users.length) {
       appendListItems(uniqueUsers, friendList);
     } else if (previousOnlineUsers.length > users.length) {
-      removeListItems(uniqueUsers, friendList);
+      removeListItems(users, friendList);
     }
   }
 
@@ -148,7 +148,34 @@ require('./renderer.js');
     });
   }
 
-  function removeListItems(userArray, parentNode) {
-    //
+  function removeListItems(users, parentNode) {
+    let obsoleteUsers = previousOnlineUsers.filter(x => !users.includes(x));
+
+    if (users.length === 0) {
+      while (friendList.firstChild) {
+        friendList.removeChild(friendList.firstChild);
+      }
+      friendList.style.display = 'none';
+      return;
+    }
+
+    obsoleteUsers.forEach(user => {
+      let li = getListItemByContent(user);
+
+      if (li) {
+        friendList.removeChild(li);
+      }
+    });
+  }
+
+  function getListItemByContent(name) {
+    let listItems = Array.from(friendList.getElementsByTagName('li'));
+
+    for (let i = 0; i < listItems.length; i++) {
+      if (listItems[i].innerHTML === name) {
+        return friendList.getElementsByTagName('li')[i];
+      }
+    }
+    return null;
   }
 }());
