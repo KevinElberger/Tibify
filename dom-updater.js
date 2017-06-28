@@ -14,18 +14,18 @@ require('./renderer.js');
 
   ipc.on('usersOnline', function(event, data) {
     if (!receivedFirstData && data.userNames) {
-      appendOnlineUsers(data.userNames);
+      displayOnlineUsers(data.userNames);
       previousOnlineUsers = data.userNames;
       receivedFirstData = true;
-    } else if (!arraysEqual(previousOnlineUsers, data.userNames)) {
-      appendOnlineUsers(data.userNames);
+    } 
+    if (!arraysEqual(previousOnlineUsers, data.userNames)) {
+      displayOnlineUsers(data.userNames);
       previousOnlineUsers = data.userNames;
     }
     numberOfUsers.innerHTML = data.numberOfUsers;
   });
 
   friendList.style.display = 'none';
-
   showOrHideFriendList(friendList);
 
   inputField.addEventListener('keypress', e => {
@@ -33,27 +33,12 @@ require('./renderer.js');
       return;
     }
 
-    formPartTwo.focus();
-    formPartTwo.style.left = '35%';
-    formPartOne.style.left = '-50%';
-    formPartTwo.style.display = 'inline-block';
-
-    formPartTwo.addEventListener('keyup', e => {
-      if (e.keyCode !== 8) {
-        return;
-      }
-      formPartOne.style.left = '33%';
-      formPartTwo.style.left = '100%';
-      formPartTwo.style.display = 'none';
-    });
+    displayFormPartTwo();
 
     finishButton.addEventListener('click', function() {
-      let data = getFormData();
-      if (inputField.value !== '') {
-        inputField.value = '';
-        ipc.send('valueReceived', data);
-        resetForm();
-      }
+      sendData();
+      resetForm();
+      displayToastMessage('User added');
     });
   });
 
@@ -71,6 +56,63 @@ require('./renderer.js');
     });
   }
 
+  function displayFormPartTwo() {
+    formPartTwo.focus();
+    formPartTwo.style.left = '35%';
+    formPartOne.style.left = '-50%';
+    formPartTwo.style.display = 'inline-block';
+
+    formPartTwo.addEventListener('keyup', e => {
+      if (e.keyCode !== 8) {
+        return;
+      }
+      hideFormPartTwo();
+    });
+  }
+
+  function hideFormPartTwo() {
+    formPartOne.style.left = '33%';
+    formPartTwo.style.left = '100%';
+    formPartTwo.style.display = 'none';
+  }
+
+  function sendData() {
+    let data = getFormData();
+    if (inputField.value !== '') {
+      inputField.value = '';
+      ipc.send('valueReceived', data);
+    }
+  }
+
+  function getFormData() {
+    let formData = {};
+    let notifications = Array.from(document.getElementsByClassName('notifications'));
+
+    formData.name = inputField.value;
+
+    notifications.forEach(notification => {
+      if (notification.checked) {
+        formData[notification.name] = true;
+      }
+    });
+    return formData;
+  }
+
+  function resetForm() {
+    formPartOne.style.left = '33%';
+    formPartTwo.style.display = 'none';
+    formPartTwo.style.left = '100%';
+  }
+
+  function displayToastMessage(message) {
+    let toastNotification = document.createElement('div');
+    let toastText = document.createTextNode(message);
+
+    toastNotification.classList = 'toast peek';
+    toastNotification.appendChild(toastText);
+    document.body.appendChild(toastNotification);
+  }
+
   function arraysEqual(arr1, arr2) {
     if (arr1.length !== arr2.length) {
       return false;
@@ -85,15 +127,15 @@ require('./renderer.js');
     return true;
   }
 
-  function appendOnlineUsers(users) {
+  function displayOnlineUsers(users) {
     let oldUsers = new Set(previousOnlineUsers);
     let uniqueUsers = users.filter(x => !oldUsers.has(x));
     let friendList = document.getElementsByClassName('friends-list')[0];
 
-    if (previousOnlineUsers.length < users.length || !receivedFirstData) {
+    if (previousOnlineUsers.length < users.length) {
       appendListItems(uniqueUsers, friendList);
     } else if (previousOnlineUsers.length > users.length) {
-      // TODO: use uniqueUsers to find & remove li with matching content
+      removeListItems(uniqueUsers, friendList);
     }
   }
 
@@ -106,28 +148,7 @@ require('./renderer.js');
     });
   }
 
-  function getFormData() {
-    let formData = {};
-    let notifications = document.getElementsByClassName('notifications');
-
-    formData.name = inputField.value;
-    for (let i = 0; i < notifications.length; i++) {
-      if (notifications[i].checked) {
-        formData[notifications[i].name] = true;
-      }
-    }
-    return formData;
-  }
-
-  function resetForm() {
-    let toastNotification = document.createElement('div');
-    let toastText = document.createTextNode('User added');
-
-    toastNotification.classList = 'toast peek';
-    toastNotification.appendChild(toastText);
-    document.body.appendChild(toastNotification);
-    formPartOne.style.left = '33%';
-    formPartTwo.style.display = 'none';
-    formPartTwo.style.left = '100%';
+  function removeListItems(userArray, parentNode) {
+    //
   }
 }());
