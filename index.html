@@ -50,9 +50,9 @@
 
     ipc.on('usersOnline', function(event, data) {
       if (!receivedFirstData && data.userNames) {
-        receivedFirstData = true;
         appendOnlineUsers(data.userNames);
         previousOnlineUsers = data.userNames;
+        receivedFirstData = true;
       } else if (!arraysEqual(previousOnlineUsers, data.userNames)) {
         appendOnlineUsers(data.userNames);
         previousOnlineUsers = data.userNames;
@@ -93,29 +93,6 @@
       });
     });
 
-    function appendOnlineUsers(users) {
-      let parentNode = friendsListContainer;
-      let newFriendList = document.createElement('ul');
-      let friendList = document.getElementsByClassName('friends-list')[0];
-
-      console.log('I was called');
-      parentNode.removeChild(friendList);
-      newFriendList.classList = 'friends-list';
-
-      if (previousOnlineUsers.length < users.length) {
-        
-      }
-
-      users.forEach(user => {
-        let li = document.createElement('li');
-        let text = document.createTextNode(user);
-        li.appendChild(text);
-        newFriendList.appendChild(li);
-      });
-      friendsListContainer.appendChild(newFriendList);
-      showOrHideFriendList(newFriendList);
-    }
-
     function arraysEqual(arr1, arr2) {
       if (arr1.length !== arr2.length) {
         return false;
@@ -128,6 +105,27 @@
       }
 
       return true;
+    }
+
+    function appendOnlineUsers(users) {
+      let oldUsers = new Set(previousOnlineUsers);
+      let uniqueUsers = users.filter(x => !oldUsers.has(x));
+      let friendList = document.getElementsByClassName('friends-list')[0];
+
+      if (previousOnlineUsers.length < users.length || !receivedFirstData) {
+        appendListItems(uniqueUsers, friendList);
+      } else if (previousOnlineUsers.length > users.length) {
+
+      }
+    }
+
+    function appendListItems(userArray, parentNode) {
+      userArray.forEach(user => {
+        let li = document.createElement('li');
+        let text = document.createTextNode(user);
+        li.appendChild(text);
+        parentNode.appendChild(li);
+      });
     }
 
     function showOrHideFriendList(element) {
