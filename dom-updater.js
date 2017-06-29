@@ -169,7 +169,7 @@ require('./renderer.js');
   }
 
   function getListItemByContent(name) {
-    let listItems = Array.from(friendList.getElementsByTagName('li'));
+    let listItems = friendList.getElementsByTagName('li');
 
     for (let i = 0; i < listItems.length; i++) {
       if (listItems[i].innerHTML === name) {

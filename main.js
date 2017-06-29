@@ -8,6 +8,7 @@ const path = require('path');
 const url = require('url');
 
 const app = electron.app;
+const refreshRate = 30000 * 1;
 const BrowserWindow = electron.BrowserWindow;
 
 let mainWindow;
@@ -16,7 +17,7 @@ let notifications = {};
 
 function createWindow () {
   mainWindow = new BrowserWindow({width: 600, height: 400, resizable: false});
-  //mainWindow.setMenu(null);
+  mainWindow.setMenu(null);
 
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, 'index.html'),
@@ -31,7 +32,7 @@ function createWindow () {
 
 app.on('ready', function() {
   createWindow();
-  setInterval(updateAndNotify, 20000);
+  setInterval(updateAndNotify, refreshRate);
 });
 
 app.on('window-all-closed', function () {
@@ -54,10 +55,16 @@ ipc.on('valueReceived', function(event, data) {
     tib.saveConfigData(configData);
   }
 
-  tib.getUserData(data.name).then((data) => {
+  tib.getUserData(data.name).then(data => {
     if (JSON.parse(data).characters.error) {
       console.log(JSON.parse(data).characters.error);
       return;
+    }
+
+    if (JSON.parse(data).characters.other_characters.length < 1) {
+      tib.getWorldData(JSON.parse(data).characters.data.world).then(world => {
+        tib.worldData[JSON.parse(data).characters.data.name] = world;
+      });
     }
     tib.saveNewUserData(JSON.parse(data));
   });
@@ -70,7 +77,7 @@ function updateAndNotify() {
     return;
   }
 
-  tib.updateUserData().then(() => {
+  tib.updateUserData().then(tib.updateWorldData().then(() => {
     let configData = tib.getFileData('config');
 
     Object.keys(configData).forEach(user => {
@@ -81,7 +88,7 @@ function updateAndNotify() {
     notifyUserDeath();
     notifyUserOnline();
     notifyUserLevel();
-  });
+  }));
 }
 
 function updateUserInformation(data, user) {

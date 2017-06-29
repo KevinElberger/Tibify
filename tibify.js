@@ -5,6 +5,7 @@ const request = require('request-promise');
 class Tibify {
 
   constructor() {
+    this.worldData = {};
     this.userDeaths = [];
     this.userLevels = [];
     this.currentOnlineUsers = [];
@@ -21,6 +22,10 @@ class Tibify {
 
   getUserData(name) {
     return request.get(`https://api.tibiadata.com/v1/characters/${name}.json`);
+  }
+
+  getWorldData(name) {
+    return request.get(`https://api.tibiadata.com/v1/worlds/${name}.json`);
   }
 
   saveNewUserData(username) {
@@ -80,10 +85,27 @@ class Tibify {
     });
   }
 
+  updateWorldData() {
+    let promises = [];
+    let data = this.getFileData('data');
+
+    Object.keys(data).forEach(key => {
+      if (data[key].characters.other_characters.length < 1) {
+        promises.push(this.getWorldData(data[key].characters.data.world));
+      }
+    });
+
+    return Promise.all(promises).then(world => {
+      Object.keys(data).forEach(key => {
+        this.worldData[data[key].characters.data.name] = JSON.parse(world);
+      });
+    });
+  }
+
   updatePreviouslyOnlineUsers(username) {
     let previouslyOnline = this.previouslyOnlineUsers;
     let userCharacterList = this.getListOfUsers(username);
-    
+
     userCharacterList.forEach(user => {
       if (user.status === 'online' && !previouslyOnline.hasOwnProperty(user.name)) {
         this.currentOnlineUsers.push(user.name);
@@ -95,17 +117,46 @@ class Tibify {
   }
 
   getListOfUsers(username) {
+    let onlinePlayers;
     let listOfUsers = [];
     let data = this.getFileData('data');
-    let length = data[username].characters.other_characters.length;
+    let otherCharacters = data[username].characters.other_characters;
 
-    data[username].characters.other_characters.forEach(character => {
-      listOfUsers.push({
-        name: character.name,
-        status: character.status
+    if (otherCharacters.length === 0) {
+      listOfUsers = this.getUserFromWorldData(username);
+      return listOfUsers;
+    } else {
+      otherCharacters.forEach(character => {
+        listOfUsers.push({
+          name: character.name,
+          status: character.status
+        });
       });
+      return listOfUsers;
+    }
+  }
+
+  getUserFromWorldData(username) {
+    let user = [];
+    let onlinePlayers = this.worldData[username].worlds.players_online;
+
+    Object.keys(onlinePlayers).forEach(player => {
+      if (onlinePlayers[player].name === username) {
+        user.push({
+          name: username,
+          status: 'online'
+        });
+        return user;
+      }
     });
-    return listOfUsers;
+
+    if (user.length < 1) {
+      user.push({
+        name: username,
+        status: 'offline'
+      });
+    }
+    return user;
   }
 
   updateUserDeaths(username) {
