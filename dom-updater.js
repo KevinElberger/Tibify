@@ -4,6 +4,7 @@ require('./renderer.js');
   let receivedFirstData = false;
   let previousOnlineUsers = [];
   var ipc = require('electron').ipcRenderer;
+  let form = document.getElementsByClassName('form')[0];
   let formPartOne = document.getElementsByClassName('part-one')[0];
   let formPartTwo = document.getElementsByClassName('part-two')[0];
   let friendList = document.getElementsByClassName('friends-list')[0];
@@ -12,7 +13,7 @@ require('./renderer.js');
   let numberOfUsers = document.getElementsByClassName('online-now-usercount')[0];
   let friendsListContainer = document.getElementsByClassName('online-now-box')[0];
 
-  ipc.on('usersOnline', function(event, data) {
+  ipc.on('usersOnline',(event, data) => {
     if (!receivedFirstData && data.userNames) {
       displayOnlineUsers(data.userNames);
       previousOnlineUsers = data.userNames;
@@ -25,8 +26,17 @@ require('./renderer.js');
     numberOfUsers.innerHTML = data.numberOfUsers;
   });
 
+  ipc.on('setUser', (event, data) => {
+    let userInfo = document.getElementsByClassName('user-info')[0];
+    let notifications = document.getElementsByClassName('user-notifications')[0];
+
+    form.style.display = 'none';
+    userInfo.innerHTML = JSON.parse(data['user']).characters.data.name;
+    animateUserCard();
+  });
+
   friendList.style.display = 'none';
-  showOrHideFriendList(friendList);
+  displayOrHideFriendList(friendList);
 
   inputField.addEventListener('keypress', e => {
     if (e.keyCode !== 13) {
@@ -42,19 +52,34 @@ require('./renderer.js');
     });
   });
 
-  function showOrHideFriendList(element) {
+  function displayOrHideFriendList(element) {
     friendsListContainer.addEventListener('click', e => {
       if (element.getElementsByTagName('li').length < 1) {
         return;
       }
 
-      console.log(e);
+      if (e.target.tagName === 'LI') {
+        ipc.send('getUser', e.target.innerHTML);
+      }
+
 
       if (element.style.display === 'none') {
         element.style.display = 'block';
       } else {
         element.style.display = 'none';
       }
+    });
+  }
+
+  function animateUserCard() {
+    let user = document.getElementsByClassName('user')[0];
+    let title = document.getElementsByClassName('title')[0];
+    let container = document.getElementsByClassName('container')[0];
+
+    title.style.display = 'none';
+    user.style.display = 'block';
+    container.addEventListener('click', () => {
+      container.classList.toggle('expand');
     });
   }
 

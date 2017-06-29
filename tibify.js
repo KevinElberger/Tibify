@@ -75,6 +75,7 @@ class Tibify {
     let data = this.getFileData('data');
 
     Object.keys(data).forEach(key => {
+      console.log('getting new user data');
       promises.push(this.getUserData(key));
     });
 

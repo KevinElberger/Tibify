@@ -8,10 +8,11 @@ const path = require('path');
 const url = require('url');
 
 const app = electron.app;
-const refreshRate = 30000 * 1;
+const refreshRate = 20000 * 1;
 const BrowserWindow = electron.BrowserWindow;
 
 let mainWindow;
+let initialized = false;
 let tib = new tibify();
 let notifications = {};
 
@@ -32,6 +33,10 @@ function createWindow () {
 
 app.on('ready', function() {
   createWindow();
+  if (!initialized) {
+    resetData();
+    initialized = true;
+  }
   setInterval(updateAndNotify, refreshRate);
 });
 
@@ -47,7 +52,18 @@ app.on('activate', function () {
   }
 });
 
-ipc.on('valueReceived', function(event, data) {
+ipc.on('getUser', (event, data) => {
+  let userData = {};
+  let configData = tib.getFileData('config');
+
+  userData['config'] = configData[data];
+  tib.getUserData(data).then(data => {
+    userData['user'] = data;
+    mainWindow.webContents.send('setUser', userData);   
+  }); 
+});
+
+ipc.on('valueReceived', (event, data) => {
   let configData = tib.getFileData('config');
 
   if (!configData.hasOwnProperty[data.name]) {
@@ -69,6 +85,14 @@ ipc.on('valueReceived', function(event, data) {
     tib.saveNewUserData(JSON.parse(data));
   });
 });
+
+function resetData() {
+  tib.worldData = {};
+  tib.userDeaths = [];
+  tib.userLevels = [];
+  tib.currentOnlineUsers = [];
+  tib.previouslyOnlineUsers = {};
+}
 
 function updateAndNotify() {
   const dataFile = './data.json';
