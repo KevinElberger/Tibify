@@ -21,16 +21,16 @@ input {
 }
 
 input:focus, input:valid {
-    box-shadow: none;
-    outline: none;
-    background-position: 0 0;
+  box-shadow: none;
+  outline: none;
+  background-position: 0 0;
 }
 
 input::-webkit-input-placeholder{
-      color: #1abc9c;
-      font-size: 11px;
-      transform: translateY(-20px);
-      visibility: visible !important;
+  color: #1abc9c;
+  font-size: 11px;
+  transform: translateY(-20px);
+  visibility: visible !important;
 }
 
 .title {
@@ -43,6 +43,7 @@ input::-webkit-input-placeholder{
 .form {
   width: 50%;
   overflow: hidden;
+  transition: all 1s;
 }
 
 .form input {
@@ -228,6 +229,10 @@ input::-webkit-input-placeholder{
     border-left: 4px dashed transparent;
     border-right: 4px dashed transparent;
     border-bottom: 4px solid rgba(0,0,0,0.61);
+}
+
+.user {
+  display: none;
 }
 
 @-webkit-keyframes peek {

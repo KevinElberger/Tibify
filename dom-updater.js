@@ -48,6 +48,8 @@ require('./renderer.js');
         return;
       }
 
+      console.log(e);
+
       if (element.style.display === 'none') {
         element.style.display = 'block';
       } else {

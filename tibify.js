@@ -97,6 +97,7 @@ class Tibify {
 
     return Promise.all(promises).then(world => {
       Object.keys(data).forEach(key => {
+        if (world.length === 0) { return; }
         this.worldData[data[key].characters.data.name] = JSON.parse(world);
       });
     });
