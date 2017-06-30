@@ -76,7 +76,7 @@ input::-webkit-input-placeholder{
               width 0.2s cubic-bezier(0.4, 0, 0.2, 1) 0.35s;
 }
 
-.container .expand {
+.container.expand {
   padding: 0;
   width: 80%;
   height: 100%;
@@ -100,10 +100,12 @@ input::-webkit-input-placeholder{
   transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.05s, opacity 0s;
 }
 
-.content .user-info {
+.user-content .user-info {
+  color: #fff;
+  text-align: center;
   padding: 0 0 20px 0;
 }
-.content .user-notifications {
+.user-content .user-notifications {
   color: #000;
   background-color: #FFF;
   width: 100%;
@@ -163,7 +165,7 @@ input::-webkit-input-placeholder{
 }
 
 .part-one {
-  left: 33%;
+  left: 35%;
   position: absolute;
   transition: all 1s;
 }

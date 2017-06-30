@@ -12,12 +12,11 @@ const refreshRate = 20000 * 1;
 const BrowserWindow = electron.BrowserWindow;
 
 let mainWindow;
-let initialized = false;
 let tib = new tibify();
 let notifications = {};
 
 function createWindow () {
-  mainWindow = new BrowserWindow({width: 600, height: 400, resizable: false});
+  mainWindow = new BrowserWindow({width: 700, height: 500, resizable: false});
   //mainWindow.setMenu(null);
 
   mainWindow.loadURL(url.format({
@@ -33,10 +32,6 @@ function createWindow () {
 
 app.on('ready', function() {
   createWindow();
-  if (!initialized) {
-    resetData();
-    initialized = true;
-  }
   setInterval(updateAndNotify, refreshRate);
 });
 
@@ -86,14 +81,6 @@ ipc.on('valueReceived', (event, data) => {
   });
 });
 
-function resetData() {
-  tib.worldData = {};
-  tib.userDeaths = [];
-  tib.userLevels = [];
-  tib.currentOnlineUsers = [];
-  tib.previouslyOnlineUsers = {};
-}
-
 function updateAndNotify() {
   const dataFile = './data.json';
   
@@ -101,7 +88,7 @@ function updateAndNotify() {
     return;
   }
 
-  tib.updateUserData().then(tib.updateWorldData().then(() => {
+  tib.updateUserData().then(() => { tib.updateWorldData(); }).then(() => {
     let configData = tib.getFileData('config');
 
     Object.keys(configData).forEach(user => {
@@ -112,7 +99,7 @@ function updateAndNotify() {
     notifyUserDeath();
     notifyUserOnline();
     notifyUserLevel();
-  }));
+  });
 }
 
 function updateUserInformation(data, user) {
