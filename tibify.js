@@ -21,11 +21,15 @@ class Tibify {
   }
 
   getUserData(name) {
-    return request.get(`https://api.tibiadata.com/v1/characters/${name}.json`);
+    return new Promise((resolve) => {
+      resolve(fs.readFileSync('./mock-data.json', 'utf-8'));
+    });
+    //return request.get(`https://api.tibiadata.com/v1/characters/${name}.json`);
   }
 
   getWorldData(name) {
-    return request.get(`https://api.tibiadata.com/v1/worlds/${name}.json`);
+    return fs.readFileSync('./mock-data.json', 'utf-8');
+    //return request.get(`https://api.tibiadata.com/v1/worlds/${name}.json`);
   }
 
   saveNewUserData(username) {

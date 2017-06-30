@@ -8,7 +8,7 @@ const path = require('path');
 const url = require('url');
 
 const app = electron.app;
-const refreshRate = 20000 * 1;
+const refreshRate = 8000 * 1;
 const BrowserWindow = electron.BrowserWindow;
 
 let mainWindow;

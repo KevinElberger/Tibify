@@ -13,6 +13,9 @@ require('./renderer.js');
   let numberOfUsers = document.getElementsByClassName('online-now-usercount')[0];
   let friendsListContainer = document.getElementsByClassName('online-now-box')[0];
 
+  friendList.style.display = 'none';
+  displayOrHideFriendList(friendList);
+
   ipc.on('usersOnline',(event, data) => {
     if (!receivedFirstData && data.userNames) {
       displayOnlineUsers(data.userNames);
@@ -27,16 +30,20 @@ require('./renderer.js');
   });
 
   ipc.on('setUser', (event, data) => {
+    let userData = JSON.parse(data['user']);
     let userInfo = document.getElementsByClassName('user-info')[0];
+    let userDetail = document.getElementsByClassName('user-detail')[0];
     let notifications = document.getElementsByClassName('user-notifications')[0];
 
+    if (JSON.parse(data['user']).characters.error) {
+      return;
+    }
+
     form.style.display = 'none';
-    userInfo.innerHTML = JSON.parse(data['user']).characters.data.name;
+    userInfo.innerHTML = userData.characters.data.name;
+    userDetail.innerHTML = `${userData.characters.data.vocation} - Lv. ${userData.characters.data.level}`;
     animateUserCard();
   });
-
-  friendList.style.display = 'none';
-  displayOrHideFriendList(friendList);
 
   inputField.addEventListener('keypress', e => {
     if (e.keyCode !== 13) {
@@ -44,7 +51,6 @@ require('./renderer.js');
     }
 
     displayFormPartTwo();
-
     finishButton.addEventListener('click', function() {
       sendData();
       resetForm();
@@ -62,7 +68,6 @@ require('./renderer.js');
         ipc.send('getUser', e.target.innerHTML);
       }
 
-
       if (element.style.display === 'none') {
         element.style.display = 'block';
       } else {
@@ -74,12 +79,24 @@ require('./renderer.js');
   function animateUserCard() {
     let user = document.getElementsByClassName('user')[0];
     let title = document.getElementsByClassName('title')[0];
+    let button = document.getElementsByClassName('button')[0];
     let container = document.getElementsByClassName('container')[0];
 
     title.style.display = 'none';
     user.style.display = 'block';
-    container.addEventListener('click', () => {
+    setTimeout(() => {container.classList.toggle('expand')}, 400);
+    
+    button.addEventListener('click', () => {
+      if (!container.classList.contains('expand')) {
+        return;
+      }
+
       container.classList.toggle('expand');
+      setTimeout(() => {
+        user.style.display = 'none';
+        title.style.display = 'block';
+        form.style.display = 'block';
+      }, 400);
     });
   }
 
