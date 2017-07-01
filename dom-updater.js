@@ -31,6 +31,7 @@ require('./renderer.js');
 
   ipc.on('setUser', (event, data) => {
     let userData = JSON.parse(data['user']);
+    let configData = data['config'];
     let userInfo = document.getElementsByClassName('user-info')[0];
     let userDetail = document.getElementsByClassName('user-detail')[0];
     let notifications = document.getElementsByClassName('user-notifications')[0];
@@ -39,10 +40,13 @@ require('./renderer.js');
       return;
     }
 
+    console.log(configData);
+
     form.style.display = 'none';
     userInfo.innerHTML = userData.characters.data.name;
     userDetail.innerHTML = `${userData.characters.data.vocation} - Lv. ${userData.characters.data.level}`;
     animateUserCard();
+    setPreviousNotifications(configData);
   });
 
   inputField.addEventListener('keypress', e => {
@@ -97,6 +101,17 @@ require('./renderer.js');
         title.style.display = 'block';
         form.style.display = 'block';
       }, 400);
+    });
+  }
+
+  function setPreviousNotifications(notifications) {
+    Object.keys(notifications).forEach(notification => {
+      if (notification === 'name') {
+        return;
+      }
+      if (notification) {
+        document.getElementsByName(notification)[1].checked = true;
+      }
     });
   }
 
