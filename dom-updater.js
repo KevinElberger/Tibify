@@ -7,14 +7,12 @@ require('./renderer.js');
   let form = document.getElementsByClassName('form')[0];
   let formPartOne = document.getElementsByClassName('part-one')[0];
   let formPartTwo = document.getElementsByClassName('part-two')[0];
-  let friendList = document.getElementsByClassName('friends-list')[0];
   let inputField = document.getElementsByClassName('search-name')[0];
   let finishButton = document.getElementsByClassName('raised-button')[0];
   let numberOfUsers = document.getElementsByClassName('online-now-usercount')[0];
   let friendsListContainer = document.getElementsByClassName('online-now-box')[0];
 
-  friendList.style.display = 'none';
-  displayOrHideFriendList(friendList);
+  displayOrHideFriendList();
 
   ipc.on('usersOnline',(event, data) => {
     if (!receivedFirstData && data.userNames) {
@@ -33,14 +31,20 @@ require('./renderer.js');
     let userData = JSON.parse(data['user']);
     let configData = data['config'];
     let userInfo = document.getElementsByClassName('user-info')[0];
+    let container = document.getElementsByClassName('container')[0];
     let userDetail = document.getElementsByClassName('user-detail')[0];
+    let saveButton = document.getElementsByClassName('save-button')[0];
     let notifications = document.getElementsByClassName('user-notifications')[0];
 
     if (JSON.parse(data['user']).characters.error) {
       return;
     }
 
-    console.log(configData);
+    saveButton.addEventListener('click', () => {
+      updateNotifications(configData.name);
+      hideUserCard();
+      displayToastMessage('Notifications updated');
+    });
 
     form.style.display = 'none';
     userInfo.innerHTML = userData.characters.data.name;
@@ -62,9 +66,13 @@ require('./renderer.js');
     });
   });
 
-  function displayOrHideFriendList(element) {
+  function displayOrHideFriendList() {
+    let friendList = document.getElementsByClassName('friends-list')[0];
+    
+    friendList.style.display = 'none';
+    
     friendsListContainer.addEventListener('click', e => {
-      if (element.getElementsByTagName('li').length < 1) {
+      if (friendList.getElementsByTagName('li').length < 1) {
         return;
       }
 
@@ -72,10 +80,10 @@ require('./renderer.js');
         ipc.send('getUser', e.target.innerHTML);
       }
 
-      if (element.style.display === 'none') {
-        element.style.display = 'block';
+      if (friendList.style.display === 'none') {
+        friendList.style.display = 'block';
       } else {
-        element.style.display = 'none';
+        friendList.style.display = 'none';
       }
     });
   }
@@ -90,18 +98,24 @@ require('./renderer.js');
     user.style.display = 'block';
     setTimeout(() => {container.classList.toggle('expand')}, 400);
     
-    button.addEventListener('click', () => {
-      if (!container.classList.contains('expand')) {
-        return;
-      }
+    button.addEventListener('click', hideUserCard);
+  }
 
-      container.classList.toggle('expand');
-      setTimeout(() => {
-        user.style.display = 'none';
-        title.style.display = 'block';
-        form.style.display = 'block';
-      }, 400);
-    });
+  function hideUserCard() {
+    let user = document.getElementsByClassName('user')[0];
+    let title = document.getElementsByClassName('title')[0];
+    let container = document.getElementsByClassName('container')[0];
+
+    if (!container.classList.contains('expand')) {
+      return;
+    }
+
+    container.classList.toggle('expand');
+    setTimeout(() => {
+      user.style.display = 'none';
+      title.style.display = 'block';
+      form.style.display = 'block';
+    }, 400);
   }
 
   function setPreviousNotifications(notifications) {
@@ -113,6 +127,12 @@ require('./renderer.js');
         document.getElementsByName(notification)[1].checked = true;
       }
     });
+  }
+
+  function updateNotifications(username) {
+    let data = getFormData('edit');
+    data['name'] = username;
+    ipc.send('updateUser', data);
   }
 
   function displayFormPartTwo() {
@@ -136,16 +156,18 @@ require('./renderer.js');
   }
 
   function sendData() {
-    let data = getFormData();
-    if (inputField.value !== '') {
-      inputField.value = '';
-      ipc.send('valueReceived', data);
+    let data = getFormData('notifications');
+
+    if (inputField.value === '') {
+      return;
     }
+    inputField.value = '';
+    ipc.send('valueReceived', data);
   }
 
-  function getFormData() {
+  function getFormData(className) {
     let formData = {};
-    let notifications = Array.from(document.getElementsByClassName('notifications'));
+    let notifications = Array.from(document.getElementsByClassName(className));
 
     formData.name = inputField.value;
 
@@ -208,6 +230,7 @@ require('./renderer.js');
   }
 
   function removeListItems(users, parentNode) {
+    let friendList = document.getElementsByClassName('friends-list')[0];
     let obsoleteUsers = previousOnlineUsers.filter(x => !users.includes(x));
 
     if (users.length === 0) {
@@ -220,7 +243,6 @@ require('./renderer.js');
 
     obsoleteUsers.forEach(user => {
       let li = getListItemByContent(user);
-
       if (li) {
         friendList.removeChild(li);
       }

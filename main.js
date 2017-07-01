@@ -58,6 +58,13 @@ ipc.on('getUser', (event, data) => {
   }); 
 });
 
+ipc.on('updateUser', (event, data) => {
+  let configData = tib.getFileData('config');
+
+  configData[data.name] = data;
+  tib.saveConfigData(configData);
+});
+
 ipc.on('valueReceived', (event, data) => {
   let configData = tib.getFileData('config');
 
@@ -68,7 +75,7 @@ ipc.on('valueReceived', (event, data) => {
 
   tib.getUserData(data.name).then(data => {
     if (JSON.parse(data).characters.error) {
-      console.log(JSON.parse(data).characters.error);
+      sendNotification(JSON.parse(data).characters.error);
       return;
     }
 
@@ -83,7 +90,7 @@ ipc.on('valueReceived', (event, data) => {
 
 function updateAndNotify() {
   const dataFile = './data.json';
-  
+
   if (!fs.existsSync(dataFile)) {
     return;
   }
@@ -123,7 +130,7 @@ function notifyUserDeath() {
 
   tib.userDeaths.forEach(user => {
     user.deaths.forEach(death => {
-      if (death.date.date.substr(0,11).indexOf(cestTime) !== -1 && user.notified === false) {
+      if (death.date.date.substr(0,11).indexOf(cestTime) !== -1 && !user.notified) {
         user.notified = true;
         sendNotification(user.name + message, icon);
       }

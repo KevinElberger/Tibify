@@ -24,12 +24,12 @@ class Tibify {
     return new Promise((resolve) => {
       resolve(fs.readFileSync('./mock-data.json', 'utf-8'));
     });
-    //return request.get(`https://api.tibiadata.com/v1/characters/${name}.json`);
+    // return request.get(`https://api.tibiadata.com/v1/characters/${name}.json`);
   }
 
   getWorldData(name) {
     return fs.readFileSync('./mock-data.json', 'utf-8');
-    //return request.get(`https://api.tibiadata.com/v1/worlds/${name}.json`);
+    // return request.get(`https://api.tibiadata.com/v1/worlds/${name}.json`);
   }
 
   saveNewUserData(username) {
