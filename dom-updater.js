@@ -41,9 +41,14 @@ require('./renderer.js');
     }
 
     saveButton.addEventListener('click', () => {
+<<<<<<< HEAD
       updateNotifications(configData.name);
       hideUserCard();
       displayToastMessage('Notifications updated');
+=======
+      updateNotifications();
+      hideUserCard();
+>>>>>>> 56ab4d7c525e17b0cffcd860a58ef050f5f947e4
     });
 
     form.style.display = 'none';
