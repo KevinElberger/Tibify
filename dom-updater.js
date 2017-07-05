@@ -2,7 +2,7 @@ require('./renderer.js');
 
 (function() {
   let receivedFirstData = false;
-  let previousOnlineUsers = [];
+  let previouslyReceivedUsers = [];
   var ipc = require('electron').ipcRenderer;
   let form = document.getElementsByClassName('form')[0];
   let formPartOne = document.getElementsByClassName('part-one')[0];
@@ -15,14 +15,9 @@ require('./renderer.js');
   displayOrHideFriendList();
 
   ipc.on('usersOnline',(event, data) => {
-    if (!receivedFirstData && data.userNames) {
-      displayOnlineUsers(data.userNames);
-      previousOnlineUsers = data.userNames;
-      receivedFirstData = true;
-    } 
-    if (!arraysAreEqual(previousOnlineUsers, data.userNames)) {
-      displayOnlineUsers(data.userNames);
-      previousOnlineUsers = data.userNames;
+    if (!arraysAreEqual(previouslyReceivedUsers, data.userNames)) {
+      displayUsers(data.userNames);
+      previouslyReceivedUsers = data.userNames;
     }
     numberOfUsers.innerHTML = data.numberOfUsers;
   });
@@ -36,19 +31,14 @@ require('./renderer.js');
     let saveButton = document.getElementsByClassName('save-button')[0];
     let notifications = document.getElementsByClassName('user-notifications')[0];
 
-    if (JSON.parse(data['user']).characters.error) {
+    if (userData.characters.error) {
       return;
     }
 
     saveButton.addEventListener('click', () => {
-<<<<<<< HEAD
       updateNotifications(configData.name);
       hideUserCard();
       displayToastMessage('Notifications updated');
-=======
-      updateNotifications();
-      hideUserCard();
->>>>>>> 56ab4d7c525e17b0cffcd860a58ef050f5f947e4
     });
 
     form.style.display = 'none';
@@ -213,14 +203,14 @@ require('./renderer.js');
     return true;
   }
 
-  function displayOnlineUsers(users) {
-    let oldUsers = new Set(previousOnlineUsers);
+  function displayUsers(users) {
+    let oldUsers = new Set(previouslyReceivedUsers);
     let uniqueUsers = users.filter(x => !oldUsers.has(x));
     let friendList = document.getElementsByClassName('friends-list')[0];
 
-    if (previousOnlineUsers.length < users.length) {
+    if (previouslyReceivedUsers.length < users.length) {
       appendListItems(uniqueUsers, friendList);
-    } else if (previousOnlineUsers.length > users.length) {
+    } else if (previouslyReceivedUsers.length > users.length) {
       removeListItems(users, friendList);
     }
   }

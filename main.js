@@ -8,7 +8,7 @@ const path = require('path');
 const url = require('url');
 
 const app = electron.app;
-const refreshRate = 8000 * 1;
+const refreshRate = 30000 * 1;
 const BrowserWindow = electron.BrowserWindow;
 
 let mainWindow;
@@ -32,6 +32,7 @@ function createWindow () {
 
 app.on('ready', function() {
   createWindow();
+  updateAndNotify();
   setInterval(updateAndNotify, refreshRate);
 });
 
@@ -52,6 +53,7 @@ ipc.on('getUser', (event, data) => {
   let configData = tib.getFileData('config');
 
   userData['config'] = configData[data];
+
   tib.getUserData(data).then(data => {
     userData['user'] = data;
     mainWindow.webContents.send('setUser', userData);   
@@ -102,7 +104,7 @@ function updateAndNotify() {
       updateUserInformation(configData, user);
     });
 
-    displayOnlineUsers();
+    displayUsers();
     notifyUserDeath();
     notifyUserOnline();
     notifyUserLevel();
@@ -160,12 +162,13 @@ function notifyUserLevel() {
   });
 }
 
-function displayOnlineUsers() {
+function displayUsers() {
   let data = {};
   let userNames = [];
+  let totalUsers = tib.getFileData('data');
   let numberOfUsers = Object.keys(tib.previouslyOnlineUsers).length;
   
-  Object.keys(tib.previouslyOnlineUsers).forEach(user => {
+  Object.keys(totalUsers).forEach(user => {
     userNames.push(user);
   });
 
