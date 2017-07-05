@@ -1,6 +1,7 @@
 require('./renderer.js');
 
 (function() {
+  let userCardIsActive = false;
   let previouslyReceivedUsers = [];
   var ipc = require('electron').ipcRenderer;
   let form = document.getElementsByClassName('form')[0];
@@ -35,6 +36,7 @@ require('./renderer.js');
     }
 
     saveButton.addEventListener('click', () => {
+      userCardIsActive = false;
       updateNotifications(configData.name);
       hideUserCard();
       displayToastMessage('Notifications updated');
@@ -70,7 +72,8 @@ require('./renderer.js');
         return;
       }
 
-      if (e.target.tagName === 'LI') {
+      if (e.target.tagName === 'LI' && !userCardIsActive) {
+        userCardIsActive = true;
         ipc.send('getUser', e.target.textContent);
       }
 
@@ -104,6 +107,7 @@ require('./renderer.js');
       return;
     }
 
+    userCardIsActive = false;
     container.classList.toggle('expand');
     setTimeout(() => {
       user.style.display = 'none';
