@@ -1,7 +1,6 @@
 require('./renderer.js');
 
 (function() {
-  let receivedFirstData = false;
   let previouslyReceivedUsers = [];
   var ipc = require('electron').ipcRenderer;
   let form = document.getElementsByClassName('form')[0];
@@ -16,7 +15,7 @@ require('./renderer.js');
 
   ipc.on('usersOnline',(event, data) => {
     if (!arraysAreEqual(previouslyReceivedUsers, data.userNames)) {
-      displayUsers(data.userNames);
+      displayUsers(data.userNames, data.onlineUsers);
       previouslyReceivedUsers = data.userNames;
     }
     numberOfUsers.innerHTML = data.numberOfUsers;
@@ -72,7 +71,7 @@ require('./renderer.js');
       }
 
       if (e.target.tagName === 'LI') {
-        ipc.send('getUser', e.target.innerHTML);
+        ipc.send('getUser', e.target.textContent);
       }
 
       if (friendList.style.display === 'none') {
@@ -203,28 +202,33 @@ require('./renderer.js');
     return true;
   }
 
-  function displayUsers(users) {
+  function displayUsers(totalUsers, onlineUsers) {
     let oldUsers = new Set(previouslyReceivedUsers);
-    let uniqueUsers = users.filter(x => !oldUsers.has(x));
-    let friendList = document.getElementsByClassName('friends-list')[0];
+    let uniqueUsers = totalUsers.filter(x => !oldUsers.has(x));
 
-    if (previouslyReceivedUsers.length < users.length) {
-      appendListItems(uniqueUsers, friendList);
-    } else if (previouslyReceivedUsers.length > users.length) {
-      removeListItems(users, friendList);
+    if (previouslyReceivedUsers.length < totalUsers.length) {
+      appendListItems(uniqueUsers, onlineUsers);
+    } else if (previouslyReceivedUsers.length > totalUsers.length) {
+      removeListItems(totalUsers);
     }
   }
 
-  function appendListItems(userArray, parentNode) {
-    userArray.forEach(user => {
+  function appendListItems(totalUsers, onlineUsers) {
+    let friendList = document.getElementsByClassName('friends-list')[0];
+
+    totalUsers.forEach(user => {
       let li = document.createElement('li');
       let text = document.createTextNode(user);
+      let span = document.createElement('span');
+
+      onlineUsers.includes(user) ? span.classList.add('online') : span.classList.add('offline');
+      li.appendChild(span);
       li.appendChild(text);
-      parentNode.appendChild(li);
+      friendList.appendChild(li);
     });
   }
 
-  function removeListItems(users, parentNode) {
+  function removeListItems(users) {
     let friendList = document.getElementsByClassName('friends-list')[0];
     let obsoleteUsers = previousOnlineUsers.filter(x => !users.includes(x));
 

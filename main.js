@@ -164,15 +164,21 @@ function notifyUserLevel() {
 
 function displayUsers() {
   let data = {};
-  let userNames = [];
+  let allUsers = [];
+  let onlineUsers = [];
   let totalUsers = tib.getFileData('data');
   let numberOfUsers = Object.keys(tib.previouslyOnlineUsers).length;
   
   Object.keys(totalUsers).forEach(user => {
-    userNames.push(user);
+    allUsers.push(user);
   });
 
-  data['userNames'] = userNames;
+  Object.keys(tib.previouslyOnlineUsers).forEach(user => {
+    onlineUsers.push(user);
+  });
+
+  data['userNames'] = allUsers;
+  data['onlineUsers'] = onlineUsers;
   data['numberOfUsers'] = numberOfUsers;
 
   mainWindow.webContents.on('did-finish-load', () => {

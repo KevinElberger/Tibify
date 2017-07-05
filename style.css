@@ -86,6 +86,24 @@ input::-webkit-input-placeholder{
   transition: all 0.2s, max-width 0.2s cubic-bezier(0.4, 0, 0.2, 1) 0.1s, height 0.3s ease 0.25s;
 }
 
+.online {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 10px;
+  display: inline-block;
+  background: rgb(66, 183, 42);
+}
+
+.offline {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 10px;
+  display: inline-block;
+  background: rgb(160,160,159);  
+}
+
 .user-content {
   opacity: 0;
   width: 100%;
