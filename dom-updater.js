@@ -41,10 +41,6 @@ require('./renderer.js');
       return;
     }
 
-    console.log('config data is: ');
-    console.log(configData);
-    console.log('\n');
-
     saveButton.onclick = function() {
       userCardIsActive = false;
       updateNotifications(userData.characters.data.name);
@@ -66,11 +62,11 @@ require('./renderer.js');
 
     displayFormPartTwo();
 
-    finishButton.addEventListener('click', function() {
+    finishButton.onclick = function() {
       sendData();
       resetForm();
       displayToastMessage('User added');
-    });
+    };
   });
 
   function displayOrHideFriendList() {
@@ -140,7 +136,6 @@ require('./renderer.js');
   }
 
   function updateNotifications(username) {
-    console.log('update notifications called, with username: ' + username);
     let data = getFormData('edit');
 
     data['name'] = username;
