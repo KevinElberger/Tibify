@@ -2,6 +2,7 @@ require('./renderer.js');
 
 (function() {
   let userCardIsActive = false;
+  let receivedFirstData = false;
   let previouslyReceivedUsers = [];
   var ipc = require('electron').ipcRenderer;
   let form = document.getElementsByClassName('form')[0];
@@ -15,7 +16,12 @@ require('./renderer.js');
   displayOrHideFriendList();
 
   ipc.on('usersOnline',(event, data) => {
-    if (!arraysAreEqual(previouslyReceivedUsers, data.userNames)) {
+    if (!receivedFirstData && data.userNames) {
+      displayUsers(data.userNames, data.onlineUsers);
+      previouslyReceivedUsers = data.userNames;
+      receivedFirstData = true;
+    }
+    if (receivedFirstData && !arraysAreEqual(previouslyReceivedUsers, data.userNames)) {
       displayUsers(data.userNames, data.onlineUsers);
       previouslyReceivedUsers = data.userNames;
     }
@@ -23,8 +29,8 @@ require('./renderer.js');
   });
 
   ipc.on('setUser', (event, data) => {
-    let userData = JSON.parse(data['user']);
     let configData = data['config'];
+    let userData = JSON.parse(data['user']);
     let userInfo = document.getElementsByClassName('user-info')[0];
     let container = document.getElementsByClassName('container')[0];
     let userDetail = document.getElementsByClassName('user-detail')[0];
@@ -35,12 +41,16 @@ require('./renderer.js');
       return;
     }
 
-    saveButton.addEventListener('click', () => {
+    console.log('config data is: ');
+    console.log(configData);
+    console.log('\n');
+
+    saveButton.onclick = function() {
       userCardIsActive = false;
-      updateNotifications(configData.name);
+      updateNotifications(userData.characters.data.name);
       hideUserCard();
       displayToastMessage('Notifications updated');
-    });
+    };
 
     form.style.display = 'none';
     userInfo.innerHTML = userData.characters.data.name;
@@ -55,6 +65,7 @@ require('./renderer.js');
     }
 
     displayFormPartTwo();
+
     finishButton.addEventListener('click', function() {
       sendData();
       resetForm();
@@ -109,6 +120,7 @@ require('./renderer.js');
 
     userCardIsActive = false;
     container.classList.toggle('expand');
+
     setTimeout(() => {
       user.style.display = 'none';
       title.style.display = 'block';
@@ -128,7 +140,9 @@ require('./renderer.js');
   }
 
   function updateNotifications(username) {
+    console.log('update notifications called, with username: ' + username);
     let data = getFormData('edit');
+
     data['name'] = username;
     ipc.send('updateUser', data);
   }
@@ -234,7 +248,7 @@ require('./renderer.js');
 
   function removeListItems(users) {
     let friendList = document.getElementsByClassName('friends-list')[0];
-    let obsoleteUsers = previousOnlineUsers.filter(x => !users.includes(x));
+    let deletedUsers = previousOnlineUsers.filter(x => !users.includes(x));
 
     if (users.length === 0) {
       while (friendList.firstChild) {
@@ -244,7 +258,7 @@ require('./renderer.js');
       return;
     }
 
-    obsoleteUsers.forEach(user => {
+    deletedUsers.forEach(user => {
       let li = getListItemByContent(user);
       if (li) {
         friendList.removeChild(li);

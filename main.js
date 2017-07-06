@@ -68,6 +68,7 @@ ipc.on('updateUser', (event, data) => {
 });
 
 ipc.on('valueReceived', (event, data) => {
+  let userData = JSON.parse(data);
   let configData = tib.getFileData('config');
 
   if (!configData.hasOwnProperty[data.name]) {
@@ -76,14 +77,14 @@ ipc.on('valueReceived', (event, data) => {
   }
 
   tib.getUserData(data.name).then(data => {
-    if (JSON.parse(data).characters.error) {
-      sendNotification(JSON.parse(data).characters.error);
+    if (userData.characters.error) {
+      sendNotification(userData.characters.error);
       return;
     }
 
-    if (JSON.parse(data).characters.other_characters.length < 1) {
-      tib.getWorldData(JSON.parse(data).characters.data.world).then(world => {
-        tib.worldData[JSON.parse(data).characters.data.name] = world;
+    if (userData.characters.other_characters.length < 1) {
+      tib.getWorldData(userData.characters.data.world).then(world => {
+        tib.worldData[userData.characters.data.name] = world;
       });
     }
     tib.saveNewUserData(JSON.parse(data));
