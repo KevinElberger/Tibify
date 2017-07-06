@@ -108,36 +108,31 @@ class Tibify {
   }
 
   updatePreviouslyOnlineUsers(username) {
+    let user = this.getCorrectUser(username);
     let previouslyOnline = this.previouslyOnlineUsers;
-    let userCharacterList = this.getListOfUsers(username);
 
-    userCharacterList.forEach(user => {
-      if (user.status === 'online' && !previouslyOnline.hasOwnProperty(user.name)) {
-        this.currentOnlineUsers.push(user.name);
-        previouslyOnline[user.name] = user.name;        
-      } else if (user.status === 'offline' && previouslyOnline.hasOwnProperty(user.name)) {
-        delete previouslyOnline[user.name];
-      }
-    });
+    if (user.status === 'online' && !previouslyOnline.hasOwnProperty(user.name)) {
+      this.currentOnlineUsers.push(user.name);
+      previouslyOnline[user.name] = user.name;        
+    } else if (user.status === 'offline' && previouslyOnline.hasOwnProperty(user.name)) {
+      delete previouslyOnline[user.name];
+    }
   }
 
-  getListOfUsers(username) {
+  getCorrectUser(username) {
     let onlinePlayers;
-    let listOfUsers = [];
     let data = this.getFileData('data');
+    let newUser = { name: '', status: '' };
     let otherCharacters = data[username].characters.other_characters;
 
     if (otherCharacters.length === 0) {
-      listOfUsers = this.getUserFromWorldData(username);
-      return listOfUsers;
+      correctUser = this.getUserFromWorldData(username);
+      return correctUser;
     } else {
-      otherCharacters.forEach(character => {
-        listOfUsers.push({
-          name: character.name,
-          status: character.status
-        });
-      });
-      return listOfUsers;
+      ({ name: newUser.name, status: newUser.status} = otherCharacters.find(user => {
+          return user.name === username;
+      }));
+      return newUser;
     }
   }
 

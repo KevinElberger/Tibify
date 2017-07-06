@@ -100,6 +100,8 @@ require('./renderer.js');
 
     title.style.display = 'none';
     user.style.display = 'block';
+    console.log('user card animate');
+    console.log(container.classList);
     setTimeout(() => {container.classList.toggle('expand')}, 400);
     
     button.addEventListener('click', hideUserCard);
@@ -144,7 +146,7 @@ require('./renderer.js');
 
   function displayFormPartTwo() {
     formPartTwo.focus();
-    formPartTwo.style.left = '35%';
+    formPartTwo.style.left = '35.5%';
     formPartOne.style.left = '-50%';
     formPartTwo.style.display = 'inline-block';
 
