@@ -98,17 +98,21 @@ function updateAndNotify() {
   }
 
   tib.updateUserData().then(() => tib.updateWorldData()).then(world => {
-    let data = tib.getFileData('data');
-
-    Object.keys(data).forEach(key => {
-      tib.worldData[data[key].characters.data.name] = JSON.parse(world);
-    });
+    saveWorldDataByUser(world);
   }).then(() => {
     updateUserInformation();
     displayUsers();
     notifyUserDeath();
     notifyUserOnline();
     notifyUserLevel();
+  });
+}
+
+function saveWorldDataByUser(world) {
+  let data = tib.getFileData('data');
+
+  Object.keys(data).forEach(key => {
+    tib.worldData[data[key].characters.data.name] = JSON.parse(world);
   });
 }
 

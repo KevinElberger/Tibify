@@ -100,12 +100,6 @@ class Tibify {
     });
 
     return Promise.all(promises);
-
-    /*.then(world => {
-      Object.keys(data).forEach(key => {
-        this.worldData[data[key].characters.data.name] = JSON.parse(world);
-      });
-    });*/
   }
 
   updatePreviouslyOnlineUsers(username) {
@@ -139,12 +133,11 @@ class Tibify {
 
   getUserFromWorldData(username) {
     let user = {name: '', status: ''};
-    console.log(this.worldData[username]);
     let onlinePlayers = this.worldData[username].worlds.players_online;
 
     Object.keys(onlinePlayers).forEach(player => {
       if (onlinePlayers[player].name === username) {
-        user.name = onlinePlayers[online].name;
+        user.name = onlinePlayers[player].name;
         user.status = 'online';
         return user;
       }
