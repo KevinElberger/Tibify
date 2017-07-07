@@ -77,13 +77,13 @@ ipc.on('valueReceived', (event, data) => {
 
   tib.getUserData(data.name).then(data => {
     if (JSON.parse(data).characters.error) {
-      sendNotification(userData.characters.error);
+      sendNotification(JSON.parse(data).characters.error);
       return;
     }
 
     if (JSON.parse(data).characters.other_characters.length < 1) {
       tib.getWorldData(JSON.parse(data).characters.data.world).then(world => {
-        tib.worldData[userData.characters.data.name] = world;
+        tib.worldData[JSON.parse(data).characters.data.name] = world;
       });
     }
     tib.saveNewUserData(JSON.parse(data));
@@ -97,13 +97,14 @@ function updateAndNotify() {
     return;
   }
 
-  tib.updateUserData().then(() => { tib.updateWorldData(); }).then(() => {
-    let configData = tib.getFileData('config');
+  tib.updateUserData().then(() => tib.updateWorldData()).then(world => {
+    let data = tib.getFileData('data');
 
-    Object.keys(configData).forEach(user => {
-      updateUserInformation(configData, user);
+    Object.keys(data).forEach(key => {
+      tib.worldData[data[key].characters.data.name] = JSON.parse(world);
     });
-
+  }).then(() => {
+    updateUserInformation();
     displayUsers();
     notifyUserDeath();
     notifyUserOnline();
@@ -111,16 +112,20 @@ function updateAndNotify() {
   });
 }
 
-function updateUserInformation(data, user) {
-  if (data[user].online) {
-    tib.updatePreviouslyOnlineUsers(user);
-  }
-  if (data[user].death) {
-    tib.updateUserDeaths(user);
-  }
-  if (data[user].level) {
-    tib.updateUserLevels(user);
-  }
+function updateUserInformation() {
+  let configData = tib.getFileData('config');
+
+  Object.keys(configData).forEach(user => {
+    if (configData[user].online) {
+      tib.updatePreviouslyOnlineUsers(user);
+    }
+    if (configData[user].death) {
+      tib.updateUserDeaths(user);
+    }
+    if (configData[user].level) {
+      tib.updateUserLevels(user);
+    }
+  });
 }
 
 function notifyUserDeath() {

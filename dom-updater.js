@@ -100,8 +100,6 @@ require('./renderer.js');
 
     title.style.display = 'none';
     user.style.display = 'block';
-    console.log('user card animate');
-    console.log(container.classList);
     setTimeout(() => {container.classList.toggle('expand')}, 400);
     
     button.addEventListener('click', hideUserCard);

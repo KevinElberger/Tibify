@@ -99,12 +99,13 @@ class Tibify {
       }
     });
 
-    return Promise.all(promises).then(world => {
+    return Promise.all(promises);
+
+    /*.then(world => {
       Object.keys(data).forEach(key => {
-        if (world.length === 0) { return; }
         this.worldData[data[key].characters.data.name] = JSON.parse(world);
       });
-    });
+    });*/
   }
 
   updatePreviouslyOnlineUsers(username) {
@@ -126,10 +127,10 @@ class Tibify {
     let otherCharacters = data[username].characters.other_characters;
 
     if (otherCharacters.length === 0) {
-      correctUser = this.getUserFromWorldData(username);
-      return correctUser;
+      newUser = this.getUserFromWorldData(username);
+      return newUser;
     } else {
-      ({ name: newUser.name, status: newUser.status} = otherCharacters.find(user => {
+      ({name: newUser.name, status: newUser.status} = otherCharacters.find(user => {
           return user.name === username;
       }));
       return newUser;
@@ -137,24 +138,21 @@ class Tibify {
   }
 
   getUserFromWorldData(username) {
-    let user = [];
+    let user = {name: '', status: ''};
+    console.log(this.worldData[username]);
     let onlinePlayers = this.worldData[username].worlds.players_online;
 
     Object.keys(onlinePlayers).forEach(player => {
       if (onlinePlayers[player].name === username) {
-        user.push({
-          name: username,
-          status: 'online'
-        });
+        user.name = onlinePlayers[online].name;
+        user.status = 'online';
         return user;
       }
     });
 
     if (user.length < 1) {
-      user.push({
-        name: username,
-        status: 'offline'
-      });
+      user.name = username;
+      user.status = 'offline';
     }
     return user;
   }
