@@ -98,6 +98,9 @@ function updateAndNotify() {
   }
 
   tib.updateUserData().then(() => tib.updateWorldData()).then(world => {
+    if (world.length < 1) {
+      return;
+    }
     saveWorldDataByUser(world);
   }).then(() => {
     updateUserInformation();
@@ -186,7 +189,7 @@ function displayUsers() {
     onlineUsers.push(user);
   });
 
-  data['userNames'] = allUsers;
+  data['allUsers'] = allUsers;
   data['onlineUsers'] = onlineUsers;
   data['numberOfUsers'] = numberOfUsers;
 

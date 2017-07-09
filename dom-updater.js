@@ -16,14 +16,14 @@ require('./renderer.js');
   displayOrHideFriendList();
 
   ipc.on('usersOnline',(event, data) => {
-    if (!receivedFirstData && data.userNames) {
-      displayUsers(data.userNames, data.onlineUsers);
-      previouslyReceivedUsers = data.userNames;
+    if (!receivedFirstData && data.allUsers) {
+      displayUsers(data.allUsers, data.onlineUsers);
+      previouslyReceivedUsers = data.allUsers;
       receivedFirstData = true;
     }
-    if (receivedFirstData && !arraysAreEqual(previouslyReceivedUsers, data.userNames)) {
-      displayUsers(data.userNames, data.onlineUsers);
-      previouslyReceivedUsers = data.userNames;
+    if (receivedFirstData && !arraysAreEqual(previouslyReceivedUsers, data.allUsers)) {
+      displayUsers(data.allUsers, data.onlineUsers);
+      previouslyReceivedUsers = data.allUsers;
     }
     numberOfUsers.innerHTML = data.numberOfUsers;
   });
@@ -157,7 +157,7 @@ require('./renderer.js');
   }
 
   function hideFormPartTwo() {
-    formPartOne.style.left = '33%';
+    formPartOne.style.left = '33.5%';
     formPartTwo.style.left = '100%';
     formPartTwo.style.display = 'none';
   }
@@ -219,10 +219,15 @@ require('./renderer.js');
     let oldUsers = new Set(previouslyReceivedUsers);
     let uniqueUsers = totalUsers.filter(x => !oldUsers.has(x));
 
-    if (previouslyReceivedUsers.length < totalUsers.length) {
-      appendListItems(uniqueUsers, onlineUsers);
-    } else if (previouslyReceivedUsers.length > totalUsers.length) {
-      removeListItems(totalUsers);
+    switch (true) {
+      case (previouslyReceivedUsers.length < totalUsers.length):
+        appendListItems(uniqueUsers, onlineUsers);
+        break;
+      case (previouslyReceivedUsers.length > totalUsers.length):
+        removeListItems(totalUsers);
+        break;
+      default:
+        break;
     }
   }
 

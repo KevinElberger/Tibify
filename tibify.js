@@ -24,7 +24,8 @@ class Tibify {
     // return new Promise((resolve) => {
     //   resolve(fs.readFileSync('./mock-data.json', 'utf-8'));
     // });
-    return request.get(`https://api.tibiadata.com/v1/characters/${name}.json`);
+    let encodedName = name.split(' ').join('%20');
+    return request.get(`https://api.tibiadata.com/v1/characters/${encodedName}.json`);
   }
 
   getWorldData(name) {
