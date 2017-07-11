@@ -8,6 +8,8 @@ Tibify provides notifications for three events: when a user levels up, when a us
 
 ## How to use
 
+![Adding a user](http://gph.is/2tF8SBh)
+
 Simply add a friend's (or enemy's) username and check off which notifications you'd like to receive for that person!
 
 Notifications will be displayed within 5-10 minutes of the event occurring.

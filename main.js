@@ -17,7 +17,7 @@ let notifications = {};
 
 function createWindow () {
   mainWindow = new BrowserWindow({width: 700, height: 500, resizable: false});
-  //mainWindow.setMenu(null);
+  mainWindow.setMenu(null);
 
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, 'index.html'),
