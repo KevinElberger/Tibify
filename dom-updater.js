@@ -20,8 +20,7 @@ require('./renderer.js');
       displayUsers(data.allUsers, data.onlineUsers);
       previouslyReceivedUsers = data.allUsers;
       receivedFirstData = true;
-    }
-    if (receivedFirstData && !arraysAreEqual(previouslyReceivedUsers, data.allUsers)) {
+    } else if (receivedFirstData) {
       displayUsers(data.allUsers, data.onlineUsers);
       previouslyReceivedUsers = data.allUsers;
     }
@@ -201,20 +200,6 @@ require('./renderer.js');
     document.body.appendChild(toastNotification);
   }
 
-  function arraysAreEqual(arr1, arr2) {
-    if (arr1.length !== arr2.length) {
-      return false;
-    }
-
-    for (let i = arr1.length; i--;) {
-      if (arr1[i] !== arr2[i]) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
   function displayUsers(totalUsers, onlineUsers) {
     let oldUsers = new Set(previouslyReceivedUsers);
     let uniqueUsers = totalUsers.filter(x => !oldUsers.has(x));
@@ -227,6 +212,7 @@ require('./renderer.js');
         removeListItems(totalUsers);
         break;
       default:
+        updateOnlineIcon(onlineUsers);
         break;
     }
   }
@@ -266,11 +252,25 @@ require('./renderer.js');
     });
   }
 
+  function updateOnlineIcon(users) {
+    let listItems = document.getElementsByClassName('friends-list')[0].getElementsByTagName('li');
+
+    users.forEach(user => {
+      for (let i = 0; i < listItems.length; i++) {
+        let span = listItems[i].getElementsByTagName('span')[0];
+        if (listItems[i].textContent === user && span.classList.contains('offline')) {
+          span.classList.remove('offline');
+          span.classList.add('online');
+        }
+      }
+    });
+  }
+
   function getListItemByContent(name) {
-    let listItems = friendList.getElementsByTagName('li');
+    let listItems = document.getElementsByClassName('friends-list')[0].getElementsByTagName('li');
 
     for (let i = 0; i < listItems.length; i++) {
-      if (listItems[i].innerHTML === name) {
+      if (listItems[i].textContent === name) {
         return friendList.getElementsByTagName('li')[i];
       }
     }
