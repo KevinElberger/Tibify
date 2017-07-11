@@ -8,7 +8,9 @@ Tibify provides notifications for three events: when a user levels up, when a us
 
 ## How to use
 
-![Adding a user](https://media.giphy.com/media/19heJkE5tn5a8/giphy.gif)
+<p align="center">
+    <img src="https://media.giphy.com/media/19heJkE5tn5a8/giphy.gif" />
+</p>
 
 Simply add a friend's (or enemy's) username and check off which notifications you'd like to receive for that person!
 
