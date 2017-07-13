@@ -8,10 +8,12 @@ const path = require('path');
 const url = require('url');
 
 const app = electron.app;
+const {Menu, Tray} = require('electron');
 const refreshRate = 30000 * 1;
 const BrowserWindow = electron.BrowserWindow;
 
 let mainWindow;
+let tray = null;
 let tib = new tibify();
 let notifications = {};
 
@@ -32,6 +34,7 @@ function createWindow () {
 
 app.on('ready', function() {
   createWindow();
+  createTray();
   updateAndNotify();
   setInterval(updateAndNotify, refreshRate);
 });
@@ -89,6 +92,16 @@ ipc.on('valueReceived', (event, data) => {
     tib.saveNewUserData(JSON.parse(data));
   });
 });
+
+function createTray() {
+  tray = new Tray(`${__dirname}/assets/icons/The_Holy_Tible.png`);
+  const contextMenu = Menu.buildFromTemplate([
+    {label: 'Item1', type: 'radio'},
+    {label: 'Item2', type: 'radio'}
+  ]);
+  tray.setToolTip('Tibify');
+  tray.setContextMenu(contextMenu);
+}
 
 function updateAndNotify() {
   const dataFile = './data.json';
