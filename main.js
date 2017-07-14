@@ -96,8 +96,17 @@ ipc.on('valueReceived', (event, data) => {
 function createTray() {
   tray = new Tray(`${__dirname}/assets/icons/The_Holy_Tible.png`);
   const contextMenu = Menu.buildFromTemplate([
-    {label: 'Item1', type: 'radio'},
-    {label: 'Item2', type: 'radio'}
+    {
+      label: '0 Online'
+    },
+    {
+      label: 'About',
+      click () { require('electron').shell.openExternal('https://github.com/KevinElberger/Tibify.git'); }
+    },
+    {
+      label: 'Quit',
+      role: 'quit'
+    }
   ]);
   tray.setToolTip('Tibify');
   tray.setContextMenu(contextMenu);
@@ -210,7 +219,25 @@ function displayUsers() {
     mainWindow.webContents.send('usersOnline', numberOfUsers);    
   });
 
+  updateTrayContent(data['numberOfUsers']);
   mainWindow.webContents.send('usersOnline', data);
+}
+
+function updateTrayContent(number) {
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: `${number} Online`
+    },
+    {
+      label: 'About',
+      click () { require('electron').shell.openExternal('https://github.com/KevinElberger/Tibify.git'); }
+    },
+    {
+      label: 'Quit',
+      role: 'quit'
+    }
+  ]);
+  tray.setContextMenu(contextMenu);
 }
 
 function sendNotification(message, icon) {
