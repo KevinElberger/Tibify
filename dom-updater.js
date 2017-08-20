@@ -74,11 +74,12 @@ require('./renderer.js');
     friendList.style.display = 'none';
     
     friendsListContainer.addEventListener('click', e => {
+      let elementTag = e.target.tagName;
       if (friendList.getElementsByTagName('li').length < 1) {
         return;
       }
 
-      if (e.target.tagName === 'LI' && !userCardIsActive) {
+      if (elementTag === 'LI' && !userCardIsActive) {
         userCardIsActive = true;
         ipc.send('getUser', e.target.textContent);
       }

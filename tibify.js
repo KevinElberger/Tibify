@@ -1,5 +1,5 @@
 'use strict';
-const fs = require('fs');
+let fs = require('fs');
 const request = require('request-promise');
 
 class Tibify {
@@ -21,15 +21,11 @@ class Tibify {
   }
 
   getUserData(name) {
-    // return new Promise((resolve) => {
-    //   resolve(fs.readFileSync('./mock-data.json', 'utf-8'));
-    // });
     let encodedName = name.split(' ').join('%20');
     return request.get(`https://api.tibiadata.com/v1/characters/${encodedName}.json`);
   }
 
   getWorldData(name) {
-    // return fs.readFileSync('./mock-data.json', 'utf-8');
     return request.get(`https://api.tibiadata.com/v1/worlds/${name}.json`);
   }
 
@@ -153,7 +149,7 @@ class Tibify {
 
   updateUserDeaths(username) {
     let data = this.getFileData('data');
-    let user = this.getUserFromNotificationArray(this.userDeaths, username);
+    let user = this.userDeaths.find(user => user.name === username);
     let updatedDeathCount = data[username].characters.deaths.length;
 
     if (user) {
@@ -172,18 +168,9 @@ class Tibify {
     }
   }
 
-  getUserFromNotificationArray(array, username) {
-    for (let i = 0; i < array.length; i++) {
-      if (array[i].name === username) {
-        return array[i];
-      }
-    }
-    return null;
-  }
-
   updateUserLevels(username) {
     let data = this.getFileData('data');
-    let user = this.getUserFromNotificationArray(this.userLevels, username);
+    let user = this.userLevels.find(user => user.name === username);
     let updatedUserLevel = data[username].characters.data.level;
 
     if (user) {
@@ -203,4 +190,7 @@ class Tibify {
   }
 }
 
-module.exports = Tibify;
+const tibify = new Tibify();
+Object.freeze(tibify);
+
+module.exports = tibify;

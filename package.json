@@ -7,7 +7,8 @@
     "tibify"
   ],
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "test": "jasmine"
   },
   "repository": "https://github.com/KevinElberger/Tibify",
   "author": "Kevin Elberger",
@@ -17,6 +18,9 @@
     "request-promise": "^4.2.1"
   },
   "devDependencies": {
-    "electron": "~1.6.2"
+    "chai": "^4.1.0",
+    "electron": "~1.6.2",
+    "jasmine": "^2.6.0",
+    "mocha": "^3.5.0"
   }
 }
